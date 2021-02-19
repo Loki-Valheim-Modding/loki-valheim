@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleValheimMod", "Client
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeathAnnouncerValheimClientMod", "Client\DeathAnnouncerValheimClientMod\DeathAnnouncerValheimClientMod.csproj", "{B1FD6234-EF86-4DF8-B336-0E9DEC1F8706}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FirstPersonValheimClientMod", "Client\FirstPersonValheimClientMod\FirstPersonValheimClientMod.csproj", "{E8D9C62E-ECAE-4125-AEE6-9818D98D7121}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{B1FD6234-EF86-4DF8-B336-0E9DEC1F8706}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B1FD6234-EF86-4DF8-B336-0E9DEC1F8706}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B1FD6234-EF86-4DF8-B336-0E9DEC1F8706}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8D9C62E-ECAE-4125-AEE6-9818D98D7121}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8D9C62E-ECAE-4125-AEE6-9818D98D7121}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8D9C62E-ECAE-4125-AEE6-9818D98D7121}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8D9C62E-ECAE-4125-AEE6-9818D98D7121}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

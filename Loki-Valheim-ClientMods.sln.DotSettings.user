@@ -12,4 +12,6 @@
 	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=F_003A_005CProjects_005CPrivate_005CC_0023_005CValheimPlusPlusMods_005CLibs_005CBepInEx_002Edll/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=F_003A_005CProjects_005CPrivate_005CC_0023_005CValheimPlusPlusMods_005CLibs_005CBepInEx_002EHarmony_002Edll/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=F_003A_005CProjects_005CPrivate_005CC_0023_005CValheimPlusPlusMods_005CLibs_005CUnityEngine_002ECoreModule_002Edll/@EntryIndexedValue">True</s:Boolean>
-	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=F_003A_005CProjects_005CPrivate_005CC_0023_005CValheimPlusPlusMods_005CLibs_005CUnityEngine_002Edll/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=F_003A_005CProjects_005CPrivate_005CC_0023_005CValheimPlusPlusMods_005CLibs_005CUnityEngine_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=F_003A_005CProjects_005CPrivate_005CC_0023_005CValheimPlusPlusMods_005CLibs_005CUnityEngine_002EInputLegacyModule_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=F_003A_005CProjects_005CPrivate_005CC_0023_005CValheimPlusPlusMods_005CLibs_005CUnityEngine_002EInputModule_002Edll/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>

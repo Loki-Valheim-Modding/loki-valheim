@@ -30,7 +30,7 @@ namespace Loki.Mods
                 _getPeer = (Func<long, ZNetPeer>) Delegate.CreateDelegate(typeof(Func<long, ZNetPeer>), __instance, _getPeerInfo);
             }
 
-            if (!ZNet.instance.IsServer()) return;
+            if (ZNet.instance == null || !ZNet.instance.IsServer()) return;
             if (rpcData.m_methodHash != _onDeathHash) return;
             
             ZNetPeer peer = _getPeer(rpcData.m_senderPeerID);

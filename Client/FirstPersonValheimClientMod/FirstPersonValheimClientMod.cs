@@ -40,7 +40,7 @@ namespace Loki.Mods
         static void ForceCharacterModelVisible(Player __instance, ZNetView ___m_nview) {
 
             // See Player code aborting on desync issues
-            if (!___m_nview.IsOwner() || Player.m_localPlayer != __instance) return;
+            if (___m_nview == null || !___m_nview.IsOwner() || Player.m_localPlayer != __instance) return;
             
             // Late bind to instance
             if (_setVisible == null) {

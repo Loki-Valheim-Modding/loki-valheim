@@ -2,14 +2,14 @@ using BepInEx;
 using HarmonyLib;
 using UnityEngine;
 
-namespace DeathAnnouncerValheimMod
+namespace Loki.Mods
 {
     
-    [BepInPlugin("com.freecode.mods.valheim.deathannouncermod", "Death Announcer Mod", "1.0.0.0")]
-    public class DeathAnnouncerValheimMod : BaseUnityPlugin {
+    [BepInPlugin("com.loki.clientmods.valheim.deathannouncer", "Death Announcer Client Mod", "1.0.0.0")]
+    public class DeathAnnouncerValheimClientMod : BaseUnityPlugin {
 
         void Awake(){
-            Harmony.CreateAndPatchAll(typeof(DeathAnnouncerValheimMod));
+            Harmony.CreateAndPatchAll(typeof(DeathAnnouncerValheimClientMod));
         }
         
         [HarmonyPatch(typeof(Player), "OnDeath")]

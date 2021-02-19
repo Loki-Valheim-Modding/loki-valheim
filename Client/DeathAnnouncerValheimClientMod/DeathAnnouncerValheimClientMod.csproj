@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ValheimDeathAnnouncerMod</RootNamespace>
-    <AssemblyName>DeathAnnouncerValheimMod</AssemblyName>
+    <AssemblyName>DeathAnnouncerValheimClientMod</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -33,54 +33,54 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\Libs\0Harmony.dll</HintPath>
+      <HintPath>..\..\Libs\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="assembly_googleanalytics, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\Libs\assembly_googleanalytics.dll</HintPath>
+      <HintPath>..\..\Libs\assembly_googleanalytics.dll</HintPath>
     </Reference>
     <Reference Include="assembly_guiutils, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\Libs\assembly_guiutils.dll</HintPath>
+      <HintPath>..\..\Libs\assembly_guiutils.dll</HintPath>
     </Reference>
     <Reference Include="assembly_lux, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\Libs\assembly_lux.dll</HintPath>
+      <HintPath>..\..\Libs\assembly_lux.dll</HintPath>
     </Reference>
     <Reference Include="assembly_postprocessing, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\Libs\assembly_postprocessing.dll</HintPath>
+      <HintPath>..\..\Libs\assembly_postprocessing.dll</HintPath>
     </Reference>
     <Reference Include="assembly_simplemeshcombine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\Libs\assembly_simplemeshcombine.dll</HintPath>
+      <HintPath>..\..\Libs\assembly_simplemeshcombine.dll</HintPath>
     </Reference>
     <Reference Include="assembly_steamworks, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\Libs\assembly_steamworks.dll</HintPath>
+      <HintPath>..\..\Libs\assembly_steamworks.dll</HintPath>
     </Reference>
     <Reference Include="assembly_sunshafts, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\Libs\assembly_sunshafts.dll</HintPath>
+      <HintPath>..\..\Libs\assembly_sunshafts.dll</HintPath>
     </Reference>
     <Reference Include="assembly_utils, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\Libs\assembly_utils.dll</HintPath>
+      <HintPath>..\..\Libs\assembly_utils.dll</HintPath>
     </Reference>
     <Reference Include="assembly_valheim, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\Libs\assembly_valheim.dll</HintPath>
+      <HintPath>..\..\Libs\assembly_valheim.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx, Version=5.4.5.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\Libs\BepInEx.dll</HintPath>
+      <HintPath>..\..\Libs\BepInEx.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx.Harmony, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\Libs\BepInEx.Harmony.dll</HintPath>
+      <HintPath>..\..\Libs\BepInEx.Harmony.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\Libs\UnityEngine.dll</HintPath>
+      <HintPath>..\..\Libs\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\Libs\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>..\..\Libs\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DeathAnnouncerMod.cs" />
+    <Compile Include="DeathAnnouncerValheimClientMod.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

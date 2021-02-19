@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeathAnnouncerValheimMod", "DeathAnnouncerMod\DeathAnnouncerValheimMod.csproj", "{B1FD6234-EF86-4DF8-B336-0E9DEC1F8706}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleValheimMod", "Client\ExampleValheimMod\ExampleValheimMod.csproj", "{FE214629-D96A-4452-B0CB-CFB18AB86DD4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleValheimMod", "ExampleValheimMod\ExampleValheimMod.csproj", "{FE214629-D96A-4452-B0CB-CFB18AB86DD4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeathAnnouncerValheimClientMod", "Client\DeathAnnouncerValheimClientMod\DeathAnnouncerValheimClientMod.csproj", "{B1FD6234-EF86-4DF8-B336-0E9DEC1F8706}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

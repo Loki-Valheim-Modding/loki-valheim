@@ -1,0 +1,15 @@
+﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=F_003A_005CProjects_005CPrivate_005CC_0023_005CValheimPlusPlusMods_005CLibs_005C0Harmony_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=F_003A_005CProjects_005CPrivate_005CC_0023_005CValheimPlusPlusMods_005CLibs_005Cassembly_005Fgoogleanalytics_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=F_003A_005CProjects_005CPrivate_005CC_0023_005CValheimPlusPlusMods_005CLibs_005Cassembly_005Fguiutils_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=F_003A_005CProjects_005CPrivate_005CC_0023_005CValheimPlusPlusMods_005CLibs_005Cassembly_005Flux_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=F_003A_005CProjects_005CPrivate_005CC_0023_005CValheimPlusPlusMods_005CLibs_005Cassembly_005Fpostprocessing_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=F_003A_005CProjects_005CPrivate_005CC_0023_005CValheimPlusPlusMods_005CLibs_005Cassembly_005Fsimplemeshcombine_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=F_003A_005CProjects_005CPrivate_005CC_0023_005CValheimPlusPlusMods_005CLibs_005Cassembly_005Fsteamworks_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=F_003A_005CProjects_005CPrivate_005CC_0023_005CValheimPlusPlusMods_005CLibs_005Cassembly_005Fsunshafts_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=F_003A_005CProjects_005CPrivate_005CC_0023_005CValheimPlusPlusMods_005CLibs_005Cassembly_005Futils_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=F_003A_005CProjects_005CPrivate_005CC_0023_005CValheimPlusPlusMods_005CLibs_005Cassembly_005Fvalheim_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=F_003A_005CProjects_005CPrivate_005CC_0023_005CValheimPlusPlusMods_005CLibs_005CBepInEx_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=F_003A_005CProjects_005CPrivate_005CC_0023_005CValheimPlusPlusMods_005CLibs_005CBepInEx_002EHarmony_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=F_003A_005CProjects_005CPrivate_005CC_0023_005CValheimPlusPlusMods_005CLibs_005CUnityEngine_002ECoreModule_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=F_003A_005CProjects_005CPrivate_005CC_0023_005CValheimPlusPlusMods_005CLibs_005CUnityEngine_002Edll/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>

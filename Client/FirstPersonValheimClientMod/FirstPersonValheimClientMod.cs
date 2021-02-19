@@ -1,4 +1,6 @@
-﻿using BepInEx;
+﻿using System;
+using System.Reflection;
+using BepInEx;
 using HarmonyLib;
 using UnityEngine;
 
@@ -10,8 +12,11 @@ namespace Loki.Mods
     public class FirstPersonValheimClientMod : BaseUnityPlugin
     {
         private static bool IsFirstPerson = false;
+        private static Action<bool> _setVisible;
+        private static MethodInfo _setVisibleInfo;
         
         void Awake(){
+            _setVisibleInfo = typeof(Character).GetMethod("SetVisible",BindingFlags.NonPublic | BindingFlags.Instance);
             Harmony.CreateAndPatchAll(typeof(FirstPersonValheimClientMod));
         }
         
@@ -24,9 +29,27 @@ namespace Loki.Mods
             // Toggle FPS on H
             if (Input.GetKeyDown(KeyCode.H))
                 IsFirstPerson = !IsFirstPerson;
-            
-            if(IsFirstPerson)
+
+            if (IsFirstPerson) {
                 pos = Player.m_localPlayer.m_eye.transform.position;
+            }
+        }
+        
+        [HarmonyPatch(typeof(Player), "FixedUpdate")]
+        [HarmonyPostfix]
+        static void ForceCharacterModelVisible(Player __instance, ZNetView ___m_nview) {
+
+            // See Player code aborting on desync issues
+            if (!___m_nview.IsOwner() || Player.m_localPlayer != __instance) return;
+            
+            // Late bind to instance
+            if (_setVisible == null) {
+                _setVisible = (Action<bool>) Delegate.CreateDelegate(typeof(Action<bool>), __instance, _setVisibleInfo);
+            }
+            
+            if (IsFirstPerson) {
+                _setVisible(true);
+            }
         }
         
     }

@@ -4,15 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BepInEx;
+using BepInEx.Configuration;
 using HarmonyLib;
 using UnityEngine;
 
 namespace AutopickupFilterClientMod
 {
-    [BepInPlugin("com.freecode.mods.valheim.autopickupfilter", "Autopickup Filter", "1.0.0.0")]
+    [BepInPlugin("com.loki.clientmods.valheim.autopickupfilter", "Autopickup Filter", "1.0.0.0")]
     public class AutopickupFilterClientMod : BaseUnityPlugin
     {
-        static LootOption lootmode = LootOption.BlockTrash;
+        private static LootOption lootmode = LootOption.BlockTrash;
+        private static bool blockTrophies;
+        private static KeyCode switchModeKey;
         static string[] trash = new string[]
         {
             "$item_stone",
@@ -34,9 +37,25 @@ namespace AutopickupFilterClientMod
             "$item_pinecone",
             "$item_beechseeds",
         };
+        private ConfigEntry<KeyboardShortcut> _configChangeModeKey;
+        private ConfigEntry<LootOption> _configLootmode;
+        private ConfigEntry<string> _configTrashList;
+        private ConfigEntry<bool> _configBlockTrophiesTrash;
+
+        private static bool firstStartup = true;
 
         void Awake()
         {
+            _configChangeModeKey = Config.Bind("Input", "LootKey", new KeyboardShortcut(KeyCode.L), "The key used to cycle between loot modes");
+            _configLootmode = Config.Bind("Options", "DefaultLootMode", LootOption.BlockTrash, "The default loot mode when the game starts.");
+            _configBlockTrophiesTrash = Config.Bind("Options", "BlockTrophies", true, "Whether to block all trophies when in BlockTrash mode, in addition to the blocklist. You can also disable this and manually add trophy types to the trash list if you don't want to block all trophies.");
+            _configTrashList = Config.Bind("Options", "TrashList", String.Join(",", trash), "The default list of trash items used when in the BlockTrash mode, separated by commas and containing no spaces. You can view a list of everything here https://valheim.fandom.com/wiki/Localization but you MUST add a $ in front of each word");
+            
+            lootmode = _configLootmode.Value;
+            trash = _configTrashList.Value.Split(',');
+            blockTrophies = _configBlockTrophiesTrash.Value;
+            switchModeKey = _configChangeModeKey.Value.MainKey;
+
             Harmony.CreateAndPatchAll(typeof(AutopickupFilterClientMod));
         }
 
@@ -44,6 +63,13 @@ namespace AutopickupFilterClientMod
         [HarmonyPostfix]
         public static void StartFix(ItemDrop __instance)
         {
+            if (firstStartup)
+            {
+                firstStartup = false;
+                Console.instance.Print("Autoloot filter enabled and set to " + lootmode);
+                Console.instance.Print("Current trash list: " + String.Join(", ", trash));
+            }
+
             if (lootmode == LootOption.BlockNone)
             {
                 return;
@@ -54,16 +80,26 @@ namespace AutopickupFilterClientMod
                 return;
             }
 
-            var name = __instance.m_itemData.m_shared.m_name;
-            if (trash.Contains(name) || name.StartsWith("$item_trophy_"))
+            if (isTrash(__instance.m_itemData.m_shared.m_name))
             {
                 __instance.m_autoPickup = false;
             }
         }
 
+        public static bool isTrash(string name)
+        {
+            if (trash.Contains(name))
+                return true;
+
+            if (blockTrophies && name.StartsWith("$item_trophy_"))
+                return true;
+
+            return false;
+        }
+
         void Update()
         {
-            if (Input.GetKeyDown(KeyCode.L))
+            if (Input.GetKeyDown(switchModeKey))
             {
                 switch (lootmode)
                 {
@@ -89,8 +125,7 @@ namespace AutopickupFilterClientMod
                             item.m_autoPickup = true;
                             break;
                         case LootOption.BlockTrash:
-                            var name = item.m_itemData.m_shared.m_name;
-                            item.m_autoPickup = !(trash.Contains(name) || name.StartsWith("$item_trophy_"));
+                            item.m_autoPickup = !isTrash(name);
                             break;
                         case LootOption.BlockAll:
                             item.m_autoPickup = false;

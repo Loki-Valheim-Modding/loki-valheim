@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
@@ -15,6 +16,7 @@ namespace Loki.Mods
 
         // Statics done because injection requires static methods
         private static bool IsFirstPerson = false;
+        
         private static Action<bool> _setVisible;
         private static MethodInfo _setVisibleInfo;
 
@@ -23,6 +25,7 @@ namespace Loki.Mods
         private static ConfigEntry<KeyboardShortcut> _hotkey;
         private static ConfigEntry<bool> _showBodyWhenAiming;
         private static ConfigEntry<bool> _showBodyWhenBlocking;
+        
         //private static ConfigEntry<bool> _showBodyWhenHoldingWeapons;
         private static Transform _foundHead;
         private static bool _isAimingBow;
@@ -60,24 +63,35 @@ namespace Loki.Mods
                     cam.nearClipPlane = _fspNearPlane.Value;
                     __instance.m_nearClipPlaneMin = _fspNearPlane.Value;
                     __instance.m_nearClipPlaneMax = _fspNearPlane.Value;
-                }
-                else
-                {
+                    
+                } else {
+                    _foundHead = null;
                     cam.nearClipPlane = _oldNearPlane;
                     __instance.m_nearClipPlaneMin = _oldNearPlane;
                     __instance.m_nearClipPlaneMax = _oldNearPlane;
+                }
+                
+                var visEqu = Player.m_localPlayer.GetComponentInChildren<VisEquipment>();
+                var beardGO = (GameObject) AccessTools.Field(typeof(VisEquipment), "m_beardItemInstance").GetValue(visEqu);
+                var hairGO = (GameObject) AccessTools.Field(typeof(VisEquipment), "m_hairItemInstance").GetValue(visEqu);
+
+                foreach (var renderer in GetComponentsInGrandChildren<Renderer>(visEqu.m_helmet)) {
+                    renderer.enabled = false;
+                }
+                foreach (var renderer in GetComponentsInGrandChildren<Renderer>(beardGO)) {
+                    renderer.enabled = false;
+                }
+                foreach (var renderer in GetComponentsInGrandChildren<Renderer>(hairGO)) {
+                    renderer.enabled = false;
                 }
             }
 
             if (!IsFirstPerson) return;
 
-            var mEye = Player.m_localPlayer.m_eye.transform;
-            if (!_foundHead)
-            {
-                _foundHead = Player.m_localPlayer.transform.Find("Visual").Find("Armature").Find("Hips").Find("Spine").Find("Spine1").Find("Spine2").Find("Neck").Find("Head").Find("Helmet_attach");
-                Debug.Log("Found head: " + _foundHead.name);
+            if (!_foundHead) {
+                _foundHead = FindTransform(Player.m_localPlayer.transform, "Visual", "Armature", "Hips", "Spine", "Spine1", "Spine2", "Neck", "Head", "Helmet_attach");
             }
-            //pos = mEye.position + mEye.forward * _eyeOffset.Value;
+            
             pos = _foundHead.position;
 
         }
@@ -118,12 +132,48 @@ namespace Loki.Mods
 
         [HarmonyPatch(typeof(Player), "SetControls")]
         [HarmonyPostfix]
-        static void SetControls(Player __instance, bool attackHold, bool block)
-        {
+        static void SetControls(Player __instance, bool attackHold, bool block) {
             _isAimingBow = attackHold && __instance.GetCurrentWeapon().m_shared.m_itemType == ItemDrop.ItemData.ItemType.Bow;
         }
-        private static void DumpHierarchy(Transform t, int depth)
-        {
+
+        private static IEnumerable<T> GetComponentsInGrandChildren<T>(GameObject root) {
+            
+            if(root == null) yield break;
+            
+            foreach (var comp  in GetComponentsInGrandChildren<T>(root.transform)) {
+                yield return comp;
+            }
+        }
+
+        private static IEnumerable<T> GetComponentsInGrandChildren<T>(Transform root) {
+            
+            if(root == null) yield break;
+
+            foreach (var component in root.gameObject.GetComponents<T>()) {
+                Debug.Log("yielding on: " + root.name);
+                yield return component;
+            }
+            
+            foreach (Transform child in root) {
+                foreach (var componentsInGrandChild in GetComponentsInGrandChildren<T>(child)) {
+                    yield return componentsInGrandChild;
+                }
+            }
+        }
+
+        private static Transform FindTransform(Transform root, params string[] path) {
+
+            Transform output = root;
+            for (int i = 0; i < path.Length; i++) {
+                output = output.Find(path[i]);
+
+                if (output == null) break;
+            }
+
+            return output;
+        }
+        
+        private static void DumpHierarchy(Transform t, int depth) {
             Debug.Log(depth + ": " + t.name);
             foreach (Transform child in t)
             {

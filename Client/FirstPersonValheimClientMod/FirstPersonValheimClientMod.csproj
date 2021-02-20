@@ -97,5 +97,8 @@
     <Target Name="AfterBuild">
     </Target>
     -->
+	<PropertyGroup>
+		<PostBuildEvent>copy /y "$(TargetPath)" "E:\Games\steamapps\common\Valheim\BepInEx\plugins\$(TargetFileName)"</PostBuildEvent>
+	</PropertyGroup>
 
 </Project>

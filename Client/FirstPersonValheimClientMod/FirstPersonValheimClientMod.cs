@@ -19,10 +19,12 @@ namespace Loki.Mods
         
         private static float _oldNearPlane;
         private static ConfigEntry<float> _fspNearPlane, _eyeOffset;
+        private static ConfigEntry<KeyboardShortcut> _hotkey;
         
         void Awake() {
             _fspNearPlane = Config.Bind("Camera", "FPSNearPlane", 0.001f, "The Near Plane of the camera during FP mode");
             _eyeOffset = Config.Bind("Camera", "FPSOffset", -0.1f, "The offset from the eye position the camera is placed");
+            _hotkey = Config.Bind("Controls", "Hotkey", new KeyboardShortcut(KeyCode.H));
             
             _setVisibleInfo = typeof(Character).GetMethod("SetVisible",BindingFlags.NonPublic | BindingFlags.Instance);
             Harmony.CreateAndPatchAll(typeof(FirstPersonValheimClientMod));
@@ -34,7 +36,7 @@ namespace Loki.Mods
         static void SetCameraPositionToEyeOnFPS(GameCamera __instance, float dt, ref Vector3 pos, ref Quaternion rot) {
 
             // Toggle FPS on H
-            if (Input.GetKeyDown(KeyCode.H)) {
+            if (_hotkey.Value.IsDown()) {
                 IsFirstPerson = !IsFirstPerson;
                 
                 // Setup near plane etc

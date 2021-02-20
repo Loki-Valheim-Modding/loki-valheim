@@ -31,7 +31,7 @@ namespace Loki.Mods {
 
         [HarmonyPatch(typeof(Minimap), "Update")]
         [HarmonyPostfix]
-        void DisableMinimapPostUpdate(Minimap __instance) {
+        static void DisableMinimapPostUpdate(Minimap __instance) {
             
             if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null
                         || Utils.GetMainCamera() == null) {
@@ -42,7 +42,7 @@ namespace Loki.Mods {
                 _disableMinimap = !_disableMinimap;
                 
                 // Ensure that we re-enable the small root if we toggle.
-                if(!_disableMinimap) __instance.m_smallRoot.SetActive(false);
+                if(!_disableMinimap) __instance.m_smallRoot.SetActive(true);
             }
 
             // Disable minimap

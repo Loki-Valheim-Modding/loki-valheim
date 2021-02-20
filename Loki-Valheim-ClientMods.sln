@@ -1,5 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30330.147
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampleValheimMod", "Client\ExampleValheimMod\ExampleValheimMod.csproj", "{FE214629-D96A-4452-B0CB-CFB18AB86DD4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeathAnnouncerValheimClientMod", "Client\DeathAnnouncerValheimClientMod\DeathAnnouncerValheimClientMod.csproj", "{B1FD6234-EF86-4DF8-B336-0E9DEC1F8706}"
@@ -9,6 +12,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RepairItemsValheimClientMod", "Client\RepairItemsValheimClientMod\RepairItemsValheimClientMod.csproj", "{D851C49D-EE40-406F-85B5-98183B0C393D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StaminaValheimClientMod", "Client\StaminaValheimClientMod\StaminaValheimClientMod.csproj", "{C9B3C5D8-E95E-4107-B631-F029560F0AD7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutopickupFilterClientMod", "Client\AutopickupFilterClientMod\AutopickupFilterClientMod.csproj", "{D72F5BF5-3349-4F52-9396-B2A53A106EBA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,5 +41,15 @@ Global
 		{C9B3C5D8-E95E-4107-B631-F029560F0AD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C9B3C5D8-E95E-4107-B631-F029560F0AD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C9B3C5D8-E95E-4107-B631-F029560F0AD7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D72F5BF5-3349-4F52-9396-B2A53A106EBA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D72F5BF5-3349-4F52-9396-B2A53A106EBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D72F5BF5-3349-4F52-9396-B2A53A106EBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D72F5BF5-3349-4F52-9396-B2A53A106EBA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4142544C-85A6-4B69-8C15-B866263AD278}
 	EndGlobalSection
 EndGlobal

@@ -24,6 +24,7 @@ namespace AutopickupFilterClientMod
 
             "$item_chain",
             "$item_witheredbone",
+            "$item_bonefragments",
             "$item_hardantler",
             "$item_ancientseed",
 
@@ -115,7 +116,6 @@ namespace AutopickupFilterClientMod
                     default:
                         break;
                 }
-                Console.instance.Print("Autoloot filter set to " + lootmode);
 
                 foreach (var item in GameObject.FindObjectsOfType<ItemDrop>())
                 {
@@ -134,6 +134,8 @@ namespace AutopickupFilterClientMod
                             break;
                     }
                 }
+
+                Player.m_localPlayer.Message(MessageHud.MessageType.TopLeft, "Autoloot filter set to " + lootmode);
             }
         }
     }

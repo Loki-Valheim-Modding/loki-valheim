@@ -25,7 +25,6 @@ namespace Loki.Mods
         private static ConfigEntry<bool> _showBodyWhenBlocking;
         private static ConfigEntry<bool> _jawFix;
 
-        //private static ConfigEntry<bool> _showBodyWhenHoldingWeapons;
         private static Transform _helmetAttach;
         private static Transform _jaw;
         private static Vector3 _originalHeadScale;
@@ -36,11 +35,9 @@ namespace Loki.Mods
         void Awake()
         {
             _fspNearPlane = Config.Bind("Camera", "FPSNearPlane", 0.05f, "The Near Plane of the camera during FP mode");
-            //_eyeOffset = Config.Bind("Camera", "FPSOffset", -0.1f, "The offset from the eye position the camera is placed");
             _hotkey = Config.Bind("Controls", "Hotkey", new KeyboardShortcut(KeyCode.H), "Hotkey used to cycle between first person modes");
             _showBodyWhenAiming = Config.Bind("Body", "ShowBodyWhenAiming", false, "Whether to show your body while aiming your bow. The bow obscures the center of your screen so you might want to disable it");
             _showBodyWhenBlocking = Config.Bind("Body", "ShowBodyWhenBlocking", false, "Whether to show your body while blocking. Some shields might obscure your vision, but that's what shields are for!");
-            //_showBodyWhenHoldingWeapons = Config.Bind("Body", "ShowBodyHoldingWeapons", false, "Whether to show your body while you are actively holding weapons (e.g. when in combat)");
             _jawFix = Config.Bind("Body", "JawFix", false, "Tries to fix the visible jaw when helmet is set to be shown (even when not wearing a helmet). Might cause other artifacts for certain helmets.");
 
             _setVisibleInfo = typeof(Character).GetMethod("SetVisible", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -125,22 +122,11 @@ namespace Loki.Mods
             var visEqu = Player.m_localPlayer.GetComponentInChildren<VisEquipment>();
             var beardGO = (GameObject)AccessTools.Field(typeof(VisEquipment), "m_beardItemInstance").GetValue(visEqu);
             var hairGO = (GameObject)AccessTools.Field(typeof(VisEquipment), "m_hairItemInstance").GetValue(visEqu);
-            var helmetGO = (GameObject)AccessTools.Field(typeof(VisEquipment), "m_helmetItemInstance").GetValue(visEqu);
-
-            //foreach (var renderer in GetComponentsInGrandChildren<Renderer>(visEqu.m_helmet))
-            //{
-            //    renderer.enabled = false;
-            //}
-            //foreach (var renderer in GetComponentsInGrandChildren<Renderer>(helmetGO))
-            //{
-            //    renderer.enabled = !IsFirstPerson;
-            //}
-            foreach (var renderer in GetComponentsInGrandChildren<Renderer>(beardGO))
-            {
+            
+            foreach (var renderer in GetComponentsInGrandChildren<Renderer>(beardGO)) {
                 renderer.enabled = _currentFPMode == FirstPersonModes.ThirdPerson;
             }
-            foreach (var renderer in GetComponentsInGrandChildren<Renderer>(hairGO))
-            {
+            foreach (var renderer in GetComponentsInGrandChildren<Renderer>(hairGO)) {
                 renderer.enabled = _currentFPMode == FirstPersonModes.ThirdPerson;
             }
 

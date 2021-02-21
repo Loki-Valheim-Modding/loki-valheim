@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using BepInEx;
@@ -24,6 +25,7 @@ namespace Loki.Mods
         private static ConfigEntry<bool> _showBodyWhenAiming;
         private static ConfigEntry<bool> _showBodyWhenBlocking;
         private static ConfigEntry<bool> _jawFix;
+        private static ConfigEntry<bool> _defaultState;
 
         private static Transform _helmetAttach;
         private static Transform _jaw;
@@ -32,16 +34,43 @@ namespace Loki.Mods
         private static Transform _head;
         private static bool _isAimingBow;
 
+        private static FirstPersonValheimClientMod _thisMod;
+
         void Awake()
         {
+            _thisMod = this;
             _fspNearPlane = Config.Bind("Camera", "FPSNearPlane", 0.05f, "The Near Plane of the camera during FP mode");
             _hotkey = Config.Bind("Controls", "Hotkey", new KeyboardShortcut(KeyCode.H), "Hotkey used to cycle between first person modes");
             _showBodyWhenAiming = Config.Bind("Body", "ShowBodyWhenAiming", false, "Whether to show your body while aiming your bow. The bow obscures the center of your screen so you might want to disable it");
             _showBodyWhenBlocking = Config.Bind("Body", "ShowBodyWhenBlocking", false, "Whether to show your body while blocking. Some shields might obscure your vision, but that's what shields are for!");
             _jawFix = Config.Bind("Body", "JawFix", false, "Tries to fix the visible jaw when helmet is set to be shown (even when not wearing a helmet). Might cause other artifacts for certain helmets.");
+            _defaultState = Config.Bind("Controls", "StartsEnabled", true);
+
+            if (_defaultState.Value == true)
+                _currentFPMode = FirstPersonModes.FirstPersonHelmet;
 
             _setVisibleInfo = typeof(Character).GetMethod("SetVisible", BindingFlags.NonPublic | BindingFlags.Instance);
             Harmony.CreateAndPatchAll(typeof(FirstPersonValheimClientMod));
+        }
+
+        [HarmonyPatch(typeof(Player), "OnSpawned")]
+        [HarmonyPostfix]
+        static void OnSpawnedPost(Player __instance)
+        {
+            if (__instance == Player.m_localPlayer)
+            {
+                if (_defaultState.Value)
+                {
+                    SetFirstPerson(GameCamera.instance, true);
+                    _thisMod.StartCoroutine(SmallSpawndelay());
+                }
+            }
+        }
+        
+        public static IEnumerator SmallSpawndelay()
+        {
+            yield return new WaitForSeconds(1);
+            ChangeMode(GameCamera.instance);
         }
 
         // private void GetCameraPosition(float dt, out Vector3 pos, out Quaternion rot)

@@ -46,9 +46,6 @@ namespace Loki.Mods
             _jawFix = Config.Bind("Body", "JawFix", false, "Tries to fix the visible jaw when helmet is set to be shown (even when not wearing a helmet). Might cause other artifacts for certain helmets.");
             _defaultState = Config.Bind("Controls", "StartsEnabled", true);
 
-            if (_defaultState.Value == true)
-                _currentFPMode = FirstPersonModes.FirstPersonHelmet;
-
             _setVisibleInfo = typeof(Character).GetMethod("SetVisible", BindingFlags.NonPublic | BindingFlags.Instance);
             Harmony.CreateAndPatchAll(typeof(FirstPersonValheimClientMod));
         }
@@ -59,18 +56,36 @@ namespace Loki.Mods
         {
             if (__instance == Player.m_localPlayer)
             {
-                if (_defaultState.Value)
+                _thisMod.StartCoroutine(SmallSpawndelay());
+            }
+        }
+
+        [HarmonyPatch(typeof(Player), "OnDeath")]
+        [HarmonyPostfix]
+        static void OnDeathPost(Player __instance)
+        {
+            if (__instance == Player.m_localPlayer)
+            {
+                if (_currentFPMode != FirstPersonModes.ThirdPerson)
                 {
-                    SetFirstPerson(GameCamera.instance, true);
-                    _thisMod.StartCoroutine(SmallSpawndelay());
+                    _currentFPMode = FirstPersonModes.ThirdPerson;
+                    SetFirstPerson(GameCamera.instance, false);
+                    ChangeMode(GameCamera.instance);
                 }
             }
         }
-        
+
         public static IEnumerator SmallSpawndelay()
         {
-            yield return new WaitForSeconds(1);
-            ChangeMode(GameCamera.instance);
+            yield return new WaitForSeconds(0.1f);
+            _setVisible = null;
+
+            if (_defaultState.Value && _currentFPMode == FirstPersonModes.ThirdPerson)
+            {
+                _currentFPMode = FirstPersonModes.FirstPersonHelmet;
+                SetFirstPerson(GameCamera.instance, true);
+                ChangeMode(GameCamera.instance);
+            }
         }
 
         // private void GetCameraPosition(float dt, out Vector3 pos, out Quaternion rot)

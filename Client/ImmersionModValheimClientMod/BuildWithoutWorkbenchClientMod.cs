@@ -44,8 +44,8 @@ namespace ImmersionModValheimClientMod
             _configAllowedPieces = Config.Bind("Settings", "PiecesAllowedWithoutCraftingStation", String.Join(",", _allowedPieces), "A list of individual pieces where the crafting station check is ignored. Use this to allow specific pieces such as poles while still limiting complex pieces like walls and roofs. See https://valheim.fandom.com/wiki/Localization for a list");
             _configIgnoredStations = Config.Bind("Settings", "IgnoreCraftingStations", String.Join(",", _ignoredStations), "A list of crafting stations to ignore when checking whether you can build something. Use this to instantly allow all wooden building pieces without having a \"$piece_workbench\" nearby, for example");
 
-            _allowedPieces = _configAllowedPieces.Value.Split(',');
-            _ignoredStations = _configIgnoredStations.Value.Split(',');
+            _allowedPieces = _configAllowedPieces.Value.Split(',').Select(n => n.Trim()).ToArray();
+            _ignoredStations = _configIgnoredStations.Value.Split(',').Select(n => n.Trim()).ToArray();
 
             if (_configEnabled.Value)
             {

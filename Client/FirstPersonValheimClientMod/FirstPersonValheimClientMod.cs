@@ -78,6 +78,10 @@ namespace Loki.Mods
             if (_currentFPMode == FirstPersonModes.ThirdPerson || !_meleeAimFix.Value)
                 return;
 
+            var m_character = (Humanoid)AccessTools.Field(typeof(Attack), "m_character").GetValue(__instance);
+            if (Player.m_localPlayer != m_character)
+                return;
+
             if (__result.m_attackType == Attack.AttackType.Projectile)
             {
                 __result.m_attackHeight = 1.2f;

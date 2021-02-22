@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
@@ -77,6 +78,8 @@ namespace Loki.Mods
             "battleaxe_powerattack",
             "mace_secondary",
         };
+        
+        private static HashSet<int> _attacksHash = new HashSet<int>(attacks.Select(Animator.StringToHash));
 
         private static FirstPersonValheimClientMod _thisMod;
         private static int _currentTransitionAnim;
@@ -121,10 +124,9 @@ namespace Loki.Mods
 
         [HarmonyPatch(typeof(Attack), "GetMeleeAttackDir")]
         [HarmonyPostfix]
-        static void OverrideGetMeleeAttackDir(Attack __instance, ref Transform originJoint, ref Vector3 attackDir)
-        {
-            if (_currentFPMode == FirstPersonModes.ThirdPerson || !_meleeAimFix.Value)
-                return;
+        static void OverrideGetMeleeAttackDir(Attack __instance, ref Transform originJoint, ref Vector3 attackDir) {
+            // if (_currentFPMode == FirstPersonModes.ThirdPerson || !_meleeAimFix.Value)
+            //     return;
 
             var m_character = (Humanoid)AccessTools.Field(typeof(Attack), "m_character").GetValue(__instance);
             if (Player.m_localPlayer != m_character)
@@ -139,41 +141,43 @@ namespace Loki.Mods
 
         [HarmonyPatch(typeof(Player), "LateUpdate")]
         [HarmonyPostfix]
-        static void LateUpdate(Player __instance)
+        static void OverrideAnimationToAttackDir(Player __instance)
         {
-            if (_currentFPMode == FirstPersonModes.ThirdPerson || !_meleeAimFix.Value ||  Player.m_localPlayer != __instance)
-                return;
+            // if (_currentFPMode == FirstPersonModes.ThirdPerson || !_meleeAimFix.Value ||  Player.m_localPlayer != __instance)
+            //     return;
 
             var animator = __instance.GetComponentInChildren<Animator>();
             var currentState = animator.GetCurrentAnimatorStateInfo(0);
             var nextState = animator.GetNextAnimatorStateInfo(0);
+            
+            var projected = Vector3.ProjectOnPlane(GameCamera.instance.transform.forward, Vector3.right);
+            var angle = Vector3.Angle(Vector3.forward, projected);
+            Debug.Log("ANGLE: " + angle);
+            
+            var rotateUpwards = Quaternion.LookRotation(GameCamera.instance.transform.forward) * Quaternion.AngleAxis(2, Vector3.right);
+            _spine.localRotation = _spine.localRotation * Quaternion.AngleAxis(30, Vector3.right) ;
 
-            foreach (var attack in attacks)
-            {
-                if (currentState.IsName(attack))
-                {
-                    //Console.instance.Print("In attack state");
-                    _spine.rotation = GameCamera.instance.transform.rotation;
-                    _transitionOutOfAttack = true;
-                    _currentTransitionAnim = nextState.shortNameHash;
+            if (_attacksHash.Contains(currentState.fullPathHash)) {
+                
+                //Console.instance.Print("In attack state");
+                // _spine.rotation = GameCamera.instance.transform.rotation;
 
-                }
-                else if (nextState.IsName(attack))
-                {
-                    _transitionOutOfAttack = false;
-                    _spine.rotation = Quaternion.RotateTowards(_spine.rotation, GameCamera.instance.transform.rotation, 360 * nextState.normalizedTime);
-                    //Console.instance.Print("Transitioning to attack state, time " + nextState.normalizedTime);
-                }
-                //TODO bugged
-                //else if (_transitionOutOfAttack)
-                //{
-                //    if (_currentTransitionAnim == currentState.shortNameHash)
-                //    {
-                //        _spine.rotation = Quaternion.RotateTowards(GameCamera.instance.transform.rotation, _spine.rotation, 360 * nextState.normalizedTime);
-                //    }
-                //}
+                // var rotateUpwards = Quaternion.LookRotation(GameCamera.instance.transform.forward) * Quaternion.AngleAxis(45, Vector3.right);
+                // _spine.rotation =  _spine.rotation * rotateUpwards ;
+                // _transitionOutOfAttack = true;
+                _currentTransitionAnim = nextState.shortNameHash;
+                
+            } else if (_attacksHash.Contains(nextState.fullPathHash)) {
+                
+                // _transitionOutOfAttack = false;
+                // _spine.rotation = Quaternion.RotateTowards(_spine.rotation, GameCamera.instance.transform.rotation, 360 * nextState.normalizedTime);
+                
+            } else if (_transitionOutOfAttack && _attacksHash.Contains(_currentTransitionAnim)) {
+                
+                // _spine.rotation = Quaternion.RotateTowards(GameCamera.instance.transform.rotation, _spine.rotation, 360 * nextState.normalizedTime);
+                
             }
-
+            
             //_helmetAttach.rotation = GameCamera.instance.transform.rotation;
         }
 

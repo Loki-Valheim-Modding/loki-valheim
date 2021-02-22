@@ -37,52 +37,7 @@ namespace Loki.Mods
         private static Transform _spine;
         private static bool _isAimingBow;
 
-        private static bool _transitionOutOfAttack;
-
-        private static string[] attacks = new string[]
-        {
-            "swing_sword 1",
-            //"Aim bow",
-            //"bow_fire",
-            //"spear_throw",
-            "bow_fire",
-            //"swing_pickaxe",
-            "Unarmed punch 1",
-            "One handed Blocking",
-            "Unarmed Blocking",
-            "Shield blocking",
-            "knife slash 1",
-            "knife slash 2",
-            "knife slash 3",
-            "swing_sword 0",
-            "swing_sword 2",
-            //"swing_hammer",
-            //"swing_hoe",
-            "Two handed blocking",
-            "swing_sledge",
-            "sword_secondary",
-            "atgeir_attack 0",
-            "atgeir_attack 1",
-            "atgeir_attack 2",
-            "battleaxe_attack 0",
-            "battleaxe_attack 1",
-            "battleaxe_attack 2",
-            "swing_axe 0",
-            "swing_axe 1",
-            "swing_axe 2",
-            "Unarmed punch 2",
-            "Unarmed kick",
-            "knife secondary",
-            "atgeir_secondary",
-            "spear_poke",
-            "battleaxe_powerattack",
-            "mace_secondary",
-        };
-        
-        private static HashSet<int> _attacksHash = new HashSet<int>(attacks.Select(Animator.StringToHash));
-
         private static FirstPersonValheimClientMod _thisMod;
-        private static int _currentTransitionAnim;
 
         void Awake()
         {
@@ -97,6 +52,11 @@ namespace Loki.Mods
 
             _setVisibleInfo = typeof(Character).GetMethod("SetVisible", BindingFlags.NonPublic | BindingFlags.Instance);
             Harmony.CreateAndPatchAll(typeof(FirstPersonValheimClientMod));
+
+            if (_meleeAimFix.Value)
+            {
+                StartCoroutine(PlayerFixedUpdate());
+            }
         }
 
         [HarmonyPatch(typeof(Player), "OnSpawned")]
@@ -114,19 +74,25 @@ namespace Loki.Mods
         [HarmonyPostfix]
         static void AttackAwakePost(Attack __instance, ref Attack __result)
         {
-            Console.instance.Print("New instance of attack has been cloned");
-
-            if (_currentFPMode == FirstPersonModes.ThirdPerson)
+            if (_currentFPMode == FirstPersonModes.ThirdPerson || !_meleeAimFix.Value)
                 return;
 
-            __result.m_attackHeight = 0;
+            if (__result.m_attackType == Attack.AttackType.Projectile)
+            {
+                __result.m_attackHeight = 1.2f;
+            }
+            else
+            {
+                __result.m_attackHeight = 0;
+            }
         }
 
         [HarmonyPatch(typeof(Attack), "GetMeleeAttackDir")]
         [HarmonyPostfix]
-        static void OverrideGetMeleeAttackDir(Attack __instance, ref Transform originJoint, ref Vector3 attackDir) {
-            // if (_currentFPMode == FirstPersonModes.ThirdPerson || !_meleeAimFix.Value)
-            //     return;
+        static void OverrideGetMeleeAttackDir(Attack __instance, ref Transform originJoint, ref Vector3 attackDir)
+        {
+            if (_currentFPMode == FirstPersonModes.ThirdPerson || !_meleeAimFix.Value)
+                return;
 
             var m_character = (Humanoid)AccessTools.Field(typeof(Attack), "m_character").GetValue(__instance);
             if (Player.m_localPlayer != m_character)
@@ -139,46 +105,53 @@ namespace Loki.Mods
             //attackDir = Vector3.RotateTowards(m_character.transform.forward, aimDir, 0.017453292f * __instance.m_maxYAngle, 10f);
         }
 
-        [HarmonyPatch(typeof(Player), "LateUpdate")]
-        [HarmonyPostfix]
-        static void OverrideAnimationToAttackDir(Player __instance)
+        public IEnumerator PlayerFixedUpdate()
         {
-            // if (_currentFPMode == FirstPersonModes.ThirdPerson || !_meleeAimFix.Value ||  Player.m_localPlayer != __instance)
-            //     return;
+            while (true)
+            {
+                yield return new WaitForFixedUpdate();
 
-            var animator = __instance.GetComponentInChildren<Animator>();
-            var currentState = animator.GetCurrentAnimatorStateInfo(0);
-            var nextState = animator.GetNextAnimatorStateInfo(0);
-            
-            var projected = Vector3.ProjectOnPlane(GameCamera.instance.transform.forward, Vector3.right);
-            var angle = Vector3.Angle(Vector3.forward, projected);
-            Debug.Log("ANGLE: " + angle);
-            
-            var rotateUpwards = Quaternion.LookRotation(GameCamera.instance.transform.forward) * Quaternion.AngleAxis(2, Vector3.right);
-            _spine.localRotation = _spine.localRotation * Quaternion.AngleAxis(30, Vector3.right) ;
+                if (_currentFPMode == FirstPersonModes.ThirdPerson)
+                    continue;
 
-            if (_attacksHash.Contains(currentState.fullPathHash)) {
-                
-                //Console.instance.Print("In attack state");
-                // _spine.rotation = GameCamera.instance.transform.rotation;
+                try
+                {
+                    var __instance = Player.m_localPlayer;
+                    var cam = GameCamera.instance.transform;
+                    var camRot = new Vector3(cam.localEulerAngles.x, 0, 0);
+                    var camDir = new Vector3(0, cam.eulerAngles.y, 0);
+                    _spine.transform.Rotate(-camDir, Space.World);
+                    _spine.transform.Rotate(camRot, Space.World);
+                    _spine.transform.Rotate(camDir, Space.World);
+                    //spine.transform.eulerAngles = spine.transform.eulerAngles + new Vector3(cam.eulerAngles.x, 0, 0);
+                }
+                catch
+                {
 
-                // var rotateUpwards = Quaternion.LookRotation(GameCamera.instance.transform.forward) * Quaternion.AngleAxis(45, Vector3.right);
-                // _spine.rotation =  _spine.rotation * rotateUpwards ;
-                // _transitionOutOfAttack = true;
-                _currentTransitionAnim = nextState.shortNameHash;
-                
-            } else if (_attacksHash.Contains(nextState.fullPathHash)) {
-                
-                // _transitionOutOfAttack = false;
-                // _spine.rotation = Quaternion.RotateTowards(_spine.rotation, GameCamera.instance.transform.rotation, 360 * nextState.normalizedTime);
-                
-            } else if (_transitionOutOfAttack && _attacksHash.Contains(_currentTransitionAnim)) {
-                
-                // _spine.rotation = Quaternion.RotateTowards(GameCamera.instance.transform.rotation, _spine.rotation, 360 * nextState.normalizedTime);
-                
+                }
             }
-            
-            //_helmetAttach.rotation = GameCamera.instance.transform.rotation;
+        }
+
+        [HarmonyPatch(typeof(CharacterAnimEvent), "UpdateLookat")]
+        [HarmonyPrefix]
+        static bool PreUpdateLookat(CharacterAnimEvent __instance)
+        {
+            if (_currentFPMode != FirstPersonModes.ThirdPerson && _meleeAimFix.Value && __instance.GetComponentInParent<Character>() == Player.m_localPlayer)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        [HarmonyPatch(typeof(CharacterAnimEvent), "UpdateHeadRotation")]
+        [HarmonyPrefix]
+        static bool PreUpdateHeadRotation(CharacterAnimEvent __instance)
+        {
+            if (_currentFPMode != FirstPersonModes.ThirdPerson && _meleeAimFix.Value && __instance.GetComponentInParent<Character>() == Player.m_localPlayer)
+            {
+                return false;
+            }
+            return true;
         }
 
         [HarmonyPatch(typeof(Player), "OnDeath")]
@@ -203,7 +176,7 @@ namespace Loki.Mods
 
             if (_defaultState.Value && _currentFPMode == FirstPersonModes.ThirdPerson)
             {
-                _currentFPMode = FirstPersonModes.FirstPersonHelmet;
+                _currentFPMode = FirstPersonModes.FirstPersonNoHelmet;
                 SetFirstPerson(GameCamera.instance, true);
                 ChangeMode(GameCamera.instance);
             }
@@ -288,11 +261,13 @@ namespace Loki.Mods
             var visEqu = Player.m_localPlayer.GetComponentInChildren<VisEquipment>();
             var beardGO = (GameObject)AccessTools.Field(typeof(VisEquipment), "m_beardItemInstance").GetValue(visEqu);
             var hairGO = (GameObject)AccessTools.Field(typeof(VisEquipment), "m_hairItemInstance").GetValue(visEqu);
-            
-            foreach (var renderer in GetComponentsInGrandChildren<Renderer>(beardGO)) {
+
+            foreach (var renderer in GetComponentsInGrandChildren<Renderer>(beardGO))
+            {
                 renderer.enabled = _currentFPMode == FirstPersonModes.ThirdPerson;
             }
-            foreach (var renderer in GetComponentsInGrandChildren<Renderer>(hairGO)) {
+            foreach (var renderer in GetComponentsInGrandChildren<Renderer>(hairGO))
+            {
                 renderer.enabled = _currentFPMode == FirstPersonModes.ThirdPerson;
             }
 
@@ -301,6 +276,7 @@ namespace Loki.Mods
                 _jaw.localScale = new Vector3(0.0001f, 0.0001f, 0.0001f);
             }
         }
+
 
         [HarmonyPatch(typeof(Player), "FixedUpdate")]
         [HarmonyPostfix]
@@ -330,6 +306,12 @@ namespace Loki.Mods
                 if (__instance.IsBlocking())
                 {
                     visible &= _showBodyWhenBlocking.Value;
+                }
+
+                // hidden character model messes up the spine rotation for some reason, so force it to true
+                if (_meleeAimFix.Value)
+                {
+                    visible = true;
                 }
 
                 _setVisible(visible);

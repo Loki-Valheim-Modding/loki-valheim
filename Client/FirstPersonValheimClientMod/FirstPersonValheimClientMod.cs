@@ -71,24 +71,26 @@ namespace Loki.Mods
             }
         }
 
-        [HarmonyPatch(typeof(Attack), "Clone")]
-        [HarmonyPostfix]
-        static void AttackAwakePost(Attack __instance, ref Attack __result)
+        [HarmonyPatch(typeof(Attack), "Start")]
+        [HarmonyPrefix]
+        static void AttackStartPre(Attack __instance, Humanoid character)
         {
             if (_currentFPMode == FirstPersonModes.ThirdPerson || !_meleeAimFix.Value)
                 return;
 
-            var m_character = (Humanoid)AccessTools.Field(typeof(Attack), "m_character").GetValue(__instance);
-            if (Player.m_localPlayer != m_character)
+            if (Player.m_localPlayer != character)
                 return;
 
-            if (__result.m_attackType == Attack.AttackType.Projectile)
+            if (__instance.m_attackType == Attack.AttackType.Projectile)
             {
-                __result.m_attackHeight = 1.2f;
+                // Compensate ranged attacks with extra height since they originate from the feet.
+                // Would be better to just fire the arrow directly from the camera forward
+                __instance.m_attackHeight = 1.2f;
             }
             else
             {
-                __result.m_attackHeight = 0;
+                // Add no extra height when doing a melee attack since we originate from our eyes instead of feet
+                __instance.m_attackHeight = 0;
             }
         }
 
@@ -103,11 +105,8 @@ namespace Loki.Mods
             if (Player.m_localPlayer != m_character)
                 return;
 
-            //originJoint = _spine.transform;
             originJoint = GameCamera.instance.transform;
-            //originJoint = _head.transform;
             attackDir = originJoint.forward;
-            //attackDir = Vector3.RotateTowards(m_character.transform.forward, aimDir, 0.017453292f * __instance.m_maxYAngle, 10f);
         }
 
         public IEnumerator PlayerFixedUpdate()
@@ -128,7 +127,6 @@ namespace Loki.Mods
                     _spine.transform.Rotate(-camDir, Space.World);
                     _spine.transform.Rotate(camRot, Space.World);
                     _spine.transform.Rotate(camDir, Space.World);
-                    //spine.transform.eulerAngles = spine.transform.eulerAngles + new Vector3(cam.eulerAngles.x, 0, 0);
                 }
                 catch
                 {

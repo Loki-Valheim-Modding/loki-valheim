@@ -17,7 +17,8 @@ namespace Loki.Mods
     {
         // Statics done because injection requires static methods
         private static Action<bool> _setVisible;
-        private static MethodInfo _setVisibleInfo;
+        private static MethodInfo _setVisibleFieldInfo;
+        private static FieldInfo _characterFieldInfo;
         private static FirstPersonModes _currentFPMode = FirstPersonModes.ThirdPerson;
 
         private static float _oldNearPlane;
@@ -50,11 +51,12 @@ namespace Loki.Mods
             _meleeAimFix = Config.Bind("Body", "MeleeAimFix", false, "[Experimental] Changes the default melee attack direction (which is always straight forward from your body) into a direction based on your head camera.");
             _defaultState = Config.Bind("Controls", "StartsEnabled", true);
 
-            _setVisibleInfo = typeof(Character).GetMethod("SetVisible", BindingFlags.NonPublic | BindingFlags.Instance);
+            _setVisibleFieldInfo = typeof(Character).GetMethod("SetVisible", BindingFlags.NonPublic | BindingFlags.Instance);
+            _characterFieldInfo = AccessTools.Field(typeof(Attack), "m_character");
+            
             Harmony.CreateAndPatchAll(typeof(FirstPersonValheimClientMod));
 
-            if (_meleeAimFix.Value)
-            {
+            if (_meleeAimFix.Value) {
                 StartCoroutine(PlayerFixedUpdate());
             }
         }
@@ -68,7 +70,6 @@ namespace Loki.Mods
                 _thisMod.StartCoroutine(SmallSpawndelay());
             }
         }
-
 
         [HarmonyPatch(typeof(Attack), "Clone")]
         [HarmonyPostfix]
@@ -94,7 +95,7 @@ namespace Loki.Mods
             if (_currentFPMode == FirstPersonModes.ThirdPerson || !_meleeAimFix.Value)
                 return;
 
-            var m_character = (Humanoid)AccessTools.Field(typeof(Attack), "m_character").GetValue(__instance);
+            var m_character = (Humanoid) _characterFieldInfo.GetValue(__instance);
             if (Player.m_localPlayer != m_character)
                 return;
 
@@ -290,7 +291,7 @@ namespace Loki.Mods
             // Late bind to instance
             if (_setVisible == null)
             {
-                _setVisible = (Action<bool>)Delegate.CreateDelegate(typeof(Action<bool>), __instance, _setVisibleInfo);
+                _setVisible = (Action<bool>)Delegate.CreateDelegate(typeof(Action<bool>), __instance, _setVisibleFieldInfo);
             }
 
             if (_currentFPMode != FirstPersonModes.ThirdPerson)

@@ -84,9 +84,13 @@
     <Reference Include="UnityEngine.InputModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\..\Libs\UnityEngine.InputModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>..\..\Libs\UnityEngine.UI.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BuildWithoutWorkbenchClientMod.cs" />
+    <Compile Include="HideCrosshairClientMod.cs" />
     <Compile Include="HideEnemyHealthBarsClientMod.cs" />
     <Compile Include="MinimapControlsValheimClientMod.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

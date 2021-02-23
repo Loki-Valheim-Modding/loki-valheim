@@ -21,7 +21,7 @@ namespace Loki.Mods {
         
         void Awake() {
             _toggleMinimap = Config.Bind("Controls", "Hotkey", new KeyboardShortcut(KeyCode.O, KeyCode.LeftControl));
-            _defaultState = Config.Bind("Controls", "StartsEnabled", false);
+            _defaultState = Config.Bind("Controls", "StartsHidden", true);
 
             _disableMinimap = _defaultState.Value;
             

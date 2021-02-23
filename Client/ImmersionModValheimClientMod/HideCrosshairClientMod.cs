@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace ImmersionModValheimClientMod
 {
-    [BepInPlugin("com.loki.clientmods.valheim.immersion.hidecrosshair", "No Healthbars Mod", "1.0.0.0")]
+    [BepInPlugin("com.loki.clientmods.valheim.immersion.hidecrosshair", "Hide Crosshair mod", "1.0.0.0")]
     public class HideCrosshairClientMod : BaseUnityPlugin
     {
         private ConfigEntry<bool> _configHide;

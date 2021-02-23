@@ -6,12 +6,18 @@ Works for Valheim 0.145.6 (2021-02-16)
 
 ## Use
 
+- Navigate to the Valheim game directory
+   - Rightclick the game in Steam -> manage -> browse local files to get the `Valheim` game directory
 - Grab BepInEx X64 (5.4.5) & extract to game directory: https://github.com/BepInEx/BepInEx/releases/download/v5.4.5/BepInEx_x64_5.4.5.0.zip
-- Grab & unpack into `<VALHEIM_DIR>\valheim_Data\Managed` (confirm to overwrite): https://cdn.discordapp.com/attachments/623910091132895232/809851661975420989/unstripped_managed.7z
+   - Make sure the folder structure is `Valheim\BepInEx\core` and that the 3 loose files are directly inside `Valheim`
+- Grab & unpack into `Valheim\valheim_Data\Managed` (confirm to overwrite): https://cdn.discordapp.com/attachments/623910091132895232/809851661975420989/unstripped_managed.7z
    - Necessary because Valheim strips Unity assemblies: https://github.com/NeighTools/UnityDoorstop/issues/10
-- Copy the mod DLLs that you want into `BepInEx\plugins`
+- Create the folder plugins so you end up with `Valheim\BepInEx\plugins`
+- Download any mod DLLs you want from the releases section
+  - Each DLL can be used standalone, you don't need all of them.
+- Copy the mod DLLs that you downloaded into `BepInEx\plugins`
 - Run the game!
-  - [OPTIONAL]: After running the game at least once, navigate to `BepInEx\config` to edit mod configurations, then run the game again!
+  - [OPTIONAL]: After running the game at least once, navigate to `BepInEx\config` to edit mod configurations by opening them with a text editor, then run the game again!
 
 ## Current mods
 

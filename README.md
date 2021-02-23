@@ -19,7 +19,7 @@ Works for Valheim 0.145.6 (2021-02-16)
 Please note that client mods should work on online servers as well, so respect the server rules and don't ruin the game for your friends.
 Note that the mod configuration files (`BepInEx\config`) contain various options such as hotkeys to tweak to your hearts content!
 
-- First Person mode: Allows you to play the game in first person.  Press H to cycle between third person, first person without helmet and first person with helmet. 
+- First Person mode: Allows you to play the game in first person. 
   - Multiple First-Person modes! Press H to cycle between: third person, first person without helmet and first person with helmet. 
   - What-You-See-Is-What-You-Hit (WYSIWYH): Instead of hitting things directly in front of you, the attack is now angled to where you are looking!
 - Immersion mode: Aims to make the game more immersive

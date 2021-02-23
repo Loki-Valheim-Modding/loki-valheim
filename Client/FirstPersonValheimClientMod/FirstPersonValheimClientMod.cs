@@ -53,10 +53,11 @@ namespace Loki.Mods
 
             _setVisibleFieldInfo = typeof(Character).GetMethod("SetVisible", BindingFlags.NonPublic | BindingFlags.Instance);
             _characterFieldInfo = AccessTools.Field(typeof(Attack), "m_character");
-            
+
             Harmony.CreateAndPatchAll(typeof(FirstPersonValheimClientMod));
 
-            if (_meleeAimFix.Value) {
+            if (_meleeAimFix.Value)
+            {
                 StartCoroutine(PlayerFixedUpdate());
             }
         }
@@ -101,7 +102,7 @@ namespace Loki.Mods
             if (_currentFPMode == FirstPersonModes.ThirdPerson || !_meleeAimFix.Value)
                 return;
 
-            var m_character = (Humanoid) _characterFieldInfo.GetValue(__instance);
+            var m_character = (Humanoid)_characterFieldInfo.GetValue(__instance);
             if (Player.m_localPlayer != m_character)
                 return;
 
@@ -191,7 +192,7 @@ namespace Loki.Mods
         static void SetCameraPositionToEyeOnFPS(GameCamera __instance, float dt, ref Vector3 pos, ref Quaternion rot)
         {
             // Toggle FPS on H
-            if (_hotkey.Value.IsDown())
+            if (_hotkey.Value.IsDown() && Player.m_localPlayer != null && !Console.IsVisible() && !TextInput.IsVisible() && !Minimap.InTextInput() && !Menu.IsVisible())
             {
                 switch (_currentFPMode)
                 {

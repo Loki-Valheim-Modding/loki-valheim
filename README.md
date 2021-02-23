@@ -20,9 +20,10 @@ Please note that client mods should work on online servers as well, so respect t
 Note that the mod configuration files (`BepInEx\config`) contain various options such as hotkeys to tweak to your hearts content!
 
 - First Person mode: Allows you to play the game in first person.  Press H to cycle between third person, first person without helmet and first person with helmet. 
+  - Multiple First-Person modes! Press H to cycle between: third person, first person without helmet and first person with helmet. 
   - What-You-See-Is-What-You-Hit (WYSIWYH): Instead of hitting things directly in front of you, the attack is now angled to where you are looking!
 - Immersion mode: Aims to make the game more immersive
-  - Removes the map and minimap (Ctrl+O to toggle)
+  - Removes the map and minimap! Press Ctrl+O to toggle.
   - By default, allow simple wooden poles & signs to be built without a nearby workbench. (Which you'll need without a minimap!)
   - Allow users to change and set what pieces can be built without a nearby workbench (see config file).
   - Hides health bar of enemies and enemy bosses.

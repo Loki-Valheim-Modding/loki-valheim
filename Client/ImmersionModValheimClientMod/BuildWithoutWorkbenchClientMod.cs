@@ -26,7 +26,7 @@ namespace ImmersionModValheimClientMod
             "$piece_woodbeam2",
             "$piece_woodbeam26",
             "$piece_woodbeam45",
-            "$piece_woodpole1",
+            "$piece_woodpole",
             "$piece_woodpole2",
             "$piece_groundtorchwood",
             "$piece_sign",

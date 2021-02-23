@@ -13,17 +13,18 @@ Works for Valheim 0.145.6 (2021-02-16)
 
 ## Current mods
 
-Please note that client mods should work on online servers as well, so respect the server rules and don't ruin the game for your friends
+Please note that client mods should work on online servers as well, so respect the server rules and don't ruin the game for your friends.
+Note that the mod configuration files (`BepInEx\config`) contain various options such as hotkeys to tweak to your hearts content!
 
-- Autopickup filter: Cycles between 3 modes when pressing L (accept all, block trash, block all) and has a customizable trash list in the config tailored for the endgame. Items won't be picked up automatically if blocked, but can still be picked up manually.
-- Death announcer: When a player dies, it is announced to every other player
-- First Person mode: Allows you to play the game in first person. Press H to cycle between third person, first person with helmet, and first person without helmet. Has some additional configuration options
-  - Known issue: the helmet mode shows a graphical artifact near your mouth. There's an experimental fix that reduces this problem but the fix negatively affects some helmets as well
-  - Known issue: Nearby grass disappears
+- First Person mode: Allows you to play the game in first person.  Press H to cycle between third person, first person without helmet and first person with helmet. 
+  - What-You-See-Is-What-You-Hit (WYSIWYH): Instead of hitting things directly in front of you, the attack is now angled to where you are looking!
 - Immersion mode: Aims to make the game more immersive
   - Removes the map and minimap (Ctrl+O to toggle)
-  - Allows constructing wooden buildings without a workbench nearby so you can build signposts easily, which you will need when you don't have any map available!
-  - more to come
+  - By default, allow simple wooden poles & signs to be built without a nearby workbench. (Which you'll need without a minimap!)
+  - Allow users to change and set what pieces can be built without a nearby workbench (see config file).
+  - Hides health bar of enemies and enemy bosses.
+- Autopickup filter: Cycles between 3 modes when pressing L (accept all, block trash, block all) and has a customizable trash list in the config tailored for the endgame. Items won't be picked up automatically if blocked, but can still be picked up manually.
+- Death announcer: When a player dies, it is announced to every other player
 - Repair items anywhere: Press U to repair everything anywhere
 - Stamina mod: Allows you to configure stamina regeneration and the usage modifier
 

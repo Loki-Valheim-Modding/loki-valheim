@@ -11,8 +11,7 @@ Works for Valheim 0.145.6 (2021-02-16)
    - Necessary because Valheim strips Unity assemblies: https://github.com/NeighTools/UnityDoorstop/issues/10
 - Copy the mod DLLs that you want into `BepInEx\plugins`
 - Run the game!
-- After running the game at least once, navigate to `BepInEx\config` to edit mod configurations
-- Run the game again!
+ - [OPTIONAL]: After running the game at least once, navigate to `BepInEx\config` to edit mod configurations, then run the game again!
 
 ## Current mods
 

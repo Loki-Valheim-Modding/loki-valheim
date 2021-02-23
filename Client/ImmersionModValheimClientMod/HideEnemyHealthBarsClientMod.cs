@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace ImmersionModValheimClientMod
 {
@@ -32,12 +33,13 @@ namespace ImmersionModValheimClientMod
             return false;
         }
 
-        [HarmonyPatch(typeof(Hud), "IsUserHidden")]
+        [HarmonyPatch(typeof(EnemyHud), "Awake")]
         [HarmonyPrefix]
-        public static bool PostHudIsUserHidden(ref bool __result)
+        public static void PreAwake(EnemyHud __instance)
         {
-            __result = false;
-            return false;
+            __instance.m_baseHud = new GameObject();
+            __instance.m_baseHudBoss = new GameObject();
+            __instance.m_baseHudPlayer = new GameObject();
         }
     }
 }

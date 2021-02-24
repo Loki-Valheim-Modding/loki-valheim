@@ -1,8 +1,7 @@
 <p align="center">
-   <img src="https://raw.githubusercontent.com/Loki-Valheim-Modding/loki-valheim/development/logo.png"/>
-</p>
-
+   <img src="https://raw.githubusercontent.com/Loki-Valheim-Modding/loki-valheim/development/logo.png"/></br>
 [![GitHubActions Builds](https://github.com/Loki-Valheim-Modding/loki-valheim/workflows/GitHubActionsBuilds/badge.svg)](https://github.com/Loki-Valheim-Modding/loki-valheim/actions/workflows/githubactionsbuilds.yml)
+</p>
 
 Download the specific mod you want [here](https://github.com/Loki-Valheim-Modding/loki-valheim/releases).
 

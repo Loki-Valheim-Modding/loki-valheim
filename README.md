@@ -11,7 +11,7 @@ Download the specific mod you want [here](https://github.com/Loki-Valheim-Moddin
 - Navigate to the Valheim game directory
    - Rightclick the game in Steam -> manage -> browse local files to get the `Valheim` game directory
 - Grab BepInEx X64 (5.4.5) & extract to game directory: https://github.com/BepInEx/BepInEx/releases/download/v5.4.5/BepInEx_x64_5.4.5.0.zip
-   - [CHECK] Make sure the folder structure is `Valheim\BepInEx\core` and the Valheim folder has the file `winhttp.dll`.
+   - [CHECK] Make sure the folder structure is `Valheim\BepInEx\core` and the Valheim folder has the file `winhttp.dll`, `doorstop_config.ini`.
 - Grab & unpack into `Valheim\valheim_Data\Managed` (confirm to overwrite): https://cdn.discordapp.com/attachments/623910091132895232/809851661975420989/unstripped_managed.7z
 - Create a folder `plugins` so you end up with `Valheim\BepInEx\plugins`
 - Download the mod DLLs you want from the [releases section](https://github.com/Loki-Valheim-Modding/loki-valheim/releases).

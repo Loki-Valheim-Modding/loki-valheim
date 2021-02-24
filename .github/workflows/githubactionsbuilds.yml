@@ -2,9 +2,9 @@ name: GitHubActionsBuilds
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ development ]
   pull_request:
-    branches: [ develop ]
+    branches: [ development ]
 
 jobs:
   build_windows:

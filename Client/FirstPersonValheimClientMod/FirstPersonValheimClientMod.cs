@@ -24,11 +24,11 @@ namespace Loki.Mods
         private static float _oldNearPlane;
         private static ConfigEntry<float> _fspNearPlane;
         private static ConfigEntry<KeyboardShortcut> _hotkey;
+        private static ConfigEntry<string> _configStatesAllowed;
         private static ConfigEntry<bool> _showBodyWhenAiming;
         private static ConfigEntry<bool> _showBodyWhenBlocking;
         private static ConfigEntry<bool> _jawFix;
         private static ConfigEntry<bool> _meleeAimFix;
-        private static ConfigEntry<bool> _defaultState;
         private static ConfigEntry<bool> _overrideFoV;
         private static ConfigEntry<int> _configFoVThirdPerson;
         private static ConfigEntry<int> _configFoVFirstPerson;
@@ -39,19 +39,19 @@ namespace Loki.Mods
         private static Transform _head;
         private static Transform _spine;
         private static bool _isAimingBow;
-
         private static FirstPersonValheimClientMod _thisMod;
+        private static List<FirstPersonModes> _statesAllowed;
 
         void Awake()
         {
             _thisMod = this;
             _fspNearPlane = Config.Bind("Camera", "FPSNearPlane", 0.05f, "The Near Plane of the camera during FP mode");
-            _hotkey = Config.Bind("Controls", "Hotkey", new KeyboardShortcut(KeyCode.H), "Hotkey used to cycle between first person modes");
+            _hotkey = Config.Bind("Controls", "Hotkey", new KeyboardShortcut(KeyCode.H), "Hotkey used to cycle between first person. You can also add a modifier, e.g. H + LeftControl");
             _showBodyWhenAiming = Config.Bind("Body", "ShowBodyWhenAiming", false, "Whether to show your body while aiming your bow. The bow obscures the center of your screen so you might want to disable it");
             _showBodyWhenBlocking = Config.Bind("Body", "ShowBodyWhenBlocking", false, "Whether to show your body while blocking. Some shields might obscure your vision, but that's what shields are for!");
             _jawFix = Config.Bind("Body", "JawFix", false, "[Experimental] Tries to fix the visible jaw when helmet is set to be shown (even when not wearing a helmet). Might cause other artifacts for certain helmets.");
             _meleeAimFix = Config.Bind("Body", "MeleeAimFix", true, "[Experimental] Changes the default melee attack direction (which is always straight forward from your body) into a direction based on your head camera.");
-            _defaultState = Config.Bind("Controls", "StartsEnabled", true);
+            _configStatesAllowed = Config.Bind("Body", "Modes", String.Join(",", (new FirstPersonModes[] { FirstPersonModes.FirstPersonNoHelmet, FirstPersonModes.ThirdPerson }).Select(x => x.ToString())), "The list of modes that you want to be able to cycle through when the hotkey is pressed. The first entry is the mode used when the game starts. Current functional options: ThirdPerson, FirstPersonHelmet, FirstPersonNoHelmet, FirstPersonNoBody");
 
             _overrideFoV = Config.Bind("Camera", "OverrideFoV", false, "Override the game's default FoV of 65 with your own setting");
             _configFoVThirdPerson = Config.Bind("Camera", "FovThirdPerson", 90, "The FoV used when in third person");
@@ -60,7 +60,17 @@ namespace Loki.Mods
             _setVisibleFieldInfo = typeof(Character).GetMethod("SetVisible", BindingFlags.NonPublic | BindingFlags.Instance);
             _characterFieldInfo = AccessTools.Field(typeof(Attack), "m_character");
 
+            if (_configStatesAllowed.Value == null || !_configStatesAllowed.Value.Any())
+            {
+                _statesAllowed = new List<FirstPersonModes>() { FirstPersonModes.FirstPersonNoHelmet };
+            }
+            else
+            {
+                _statesAllowed = new List<FirstPersonModes>(_configStatesAllowed.Value.Split(',').Select(x => (FirstPersonModes)Enum.Parse(typeof(FirstPersonModes), x.Trim())));
+            }
+
             Harmony.CreateAndPatchAll(typeof(FirstPersonValheimClientMod));
+
             if (_meleeAimFix.Value)
             {
                 StartCoroutine(PlayerFixedUpdate());
@@ -81,7 +91,7 @@ namespace Loki.Mods
         [HarmonyPrefix]
         static void AttackStartPre(Attack __instance, Humanoid character)
         {
-            if (_currentFPMode == FirstPersonModes.ThirdPerson || !_meleeAimFix.Value)
+            if (IsThirdPerson(CurrentFPMode) || !_meleeAimFix.Value)
                 return;
 
             if (Player.m_localPlayer != character)
@@ -104,7 +114,7 @@ namespace Loki.Mods
         [HarmonyPostfix]
         static void OverrideGetMeleeAttackDir(Attack __instance, ref Transform originJoint, ref Vector3 attackDir)
         {
-            if (_currentFPMode == FirstPersonModes.ThirdPerson || !_meleeAimFix.Value)
+            if (IsThirdPerson(CurrentFPMode) || !_meleeAimFix.Value || CurrentFPMode == FirstPersonModes.FirstPersonOnlyWeapons)
                 return;
 
             var m_character = (Humanoid)_characterFieldInfo.GetValue(__instance);
@@ -121,7 +131,10 @@ namespace Loki.Mods
             {
                 yield return new WaitForFixedUpdate();
 
-                if (_currentFPMode == FirstPersonModes.ThirdPerson)
+                if (IsThirdPerson(CurrentFPMode))
+                    continue;
+
+                if (CurrentFPMode == FirstPersonModes.FirstPersonNoBody || CurrentFPMode == FirstPersonModes.FirstPersonOnlyWeapons)
                     continue;
 
                 try
@@ -145,7 +158,7 @@ namespace Loki.Mods
         [HarmonyPrefix]
         static bool PreUpdateLookat(CharacterAnimEvent __instance)
         {
-            if (_currentFPMode != FirstPersonModes.ThirdPerson && _meleeAimFix.Value && __instance.GetComponentInParent<Character>() == Player.m_localPlayer)
+            if (!IsThirdPerson(CurrentFPMode) && _meleeAimFix.Value && __instance.GetComponentInParent<Character>() == Player.m_localPlayer)
             {
                 return false;
             }
@@ -156,7 +169,7 @@ namespace Loki.Mods
         [HarmonyPrefix]
         static bool PreUpdateHeadRotation(CharacterAnimEvent __instance)
         {
-            if (_currentFPMode != FirstPersonModes.ThirdPerson && _meleeAimFix.Value && __instance.GetComponentInParent<Character>() == Player.m_localPlayer)
+            if (!IsThirdPerson(CurrentFPMode) && _meleeAimFix.Value && __instance.GetComponentInParent<Character>() == Player.m_localPlayer)
             {
                 return false;
             }
@@ -169,12 +182,7 @@ namespace Loki.Mods
         {
             if (__instance == Player.m_localPlayer)
             {
-                if (_currentFPMode != FirstPersonModes.ThirdPerson)
-                {
-                    _currentFPMode = FirstPersonModes.ThirdPerson;
-                    SetFirstPerson(GameCamera.instance, false);
-                    ChangeMode(GameCamera.instance);
-                }
+                CurrentFPMode = FirstPersonModes.ThirdPerson;
             }
         }
 
@@ -183,12 +191,7 @@ namespace Loki.Mods
             yield return new WaitForSeconds(0.1f);
             _setVisible = null;
 
-            if (_defaultState.Value && _currentFPMode == FirstPersonModes.ThirdPerson)
-            {
-                _currentFPMode = FirstPersonModes.FirstPersonNoHelmet;
-                SetFirstPerson(GameCamera.instance, true);
-                ChangeMode(GameCamera.instance);
-            }
+            CurrentFPMode = _statesAllowed.First();
         }
 
         // private void GetCameraPosition(float dt, out Vector3 pos, out Quaternion rot)
@@ -199,31 +202,24 @@ namespace Loki.Mods
             // Toggle FPS on H
             if (IsDown(_hotkey.Value) && Player.m_localPlayer != null && !Console.IsVisible() && !TextInput.IsVisible() && !Minimap.InTextInput() && !Menu.IsVisible())
             {
-                switch (_currentFPMode)
+                if (_statesAllowed.Contains(CurrentFPMode))
                 {
-                    case FirstPersonModes.ThirdPerson:
-                        _currentFPMode = FirstPersonModes.FirstPersonHelmet; SetFirstPerson(__instance, true);
-                        break;
-                    case FirstPersonModes.FirstPersonHelmet:
-                        _currentFPMode = FirstPersonModes.FirstPersonNoHelmet;
-                        break;
-                    case FirstPersonModes.FirstPersonNoHelmet:
-                        _currentFPMode = FirstPersonModes.ThirdPerson; SetFirstPerson(__instance, false);
-                        break;
-                    default:
-                        break;
+                    var index = _statesAllowed.IndexOf(CurrentFPMode) + 1;
+                    if (index >= _statesAllowed.Count)
+                        index = 0;
+                    CurrentFPMode = _statesAllowed[index];
                 }
-
-                Player.m_localPlayer.Message(MessageHud.MessageType.TopLeft, "Changing camera to " + _currentFPMode);
-
-                ChangeMode(__instance);
+                else
+                {
+                    CurrentFPMode = _statesAllowed.First();
+                }
             }
 
-            if (_currentFPMode == FirstPersonModes.FirstPersonHelmet)
+            if (CurrentFPMode == FirstPersonModes.FirstPersonHelmet || CurrentFPMode == FirstPersonModes.FirstPersonNoBody || CurrentFPMode == FirstPersonModes.FirstPersonOnlyWeapons)
             {
                 pos = _helmetAttach.position;
             }
-            else if (_currentFPMode == FirstPersonModes.FirstPersonNoHelmet)
+            else if (CurrentFPMode == FirstPersonModes.FirstPersonNoHelmet )
             {
                 _head.localScale = _originalHeadScale;
                 pos = _helmetAttach.position;
@@ -298,19 +294,20 @@ namespace Loki.Mods
 
             foreach (var renderer in GetComponentsInGrandChildren<Renderer>(beardGO))
             {
-                renderer.enabled = _currentFPMode == FirstPersonModes.ThirdPerson;
+                renderer.enabled = IsThirdPerson(CurrentFPMode);
             }
             foreach (var renderer in GetComponentsInGrandChildren<Renderer>(hairGO))
             {
-                renderer.enabled = _currentFPMode == FirstPersonModes.ThirdPerson;
+                renderer.enabled = IsThirdPerson(CurrentFPMode);
             }
 
-            if (_jawFix.Value && _currentFPMode == FirstPersonModes.FirstPersonHelmet)
+            Player.m_localPlayer.GetVisual().transform.Find("body").GetComponent<SkinnedMeshRenderer>().enabled = CurrentFPMode != FirstPersonModes.FirstPersonOnlyWeapons;
+
+            if (_jawFix.Value && CurrentFPMode == FirstPersonModes.FirstPersonHelmet)
             {
                 _jaw.localScale = new Vector3(0.0001f, 0.0001f, 0.0001f);
             }
         }
-
 
         [HarmonyPatch(typeof(Player), "FixedUpdate")]
         [HarmonyPostfix]
@@ -327,7 +324,7 @@ namespace Loki.Mods
                 _setVisible = (Action<bool>)Delegate.CreateDelegate(typeof(Action<bool>), __instance, _setVisibleFieldInfo);
             }
 
-            if (_currentFPMode != FirstPersonModes.ThirdPerson)
+            if (!IsThirdPerson(CurrentFPMode))
             {
                 __instance.FaceLookDirection();
 
@@ -348,10 +345,52 @@ namespace Loki.Mods
                     visible = true;
                 }
 
+                // but override it to false if we don't want a body!
+                if (CurrentFPMode == FirstPersonModes.FirstPersonNoBody)
+                {
+                    visible = false;
+                }
+
                 _setVisible(visible);
             }
         }
 
+        private static FirstPersonModes CurrentFPMode
+        {
+            get
+            {
+                return _currentFPMode;
+            }
+            set
+            {
+                if (_currentFPMode == value)
+                    return;
+
+                Player.m_localPlayer.Message(MessageHud.MessageType.TopLeft, "Changing camera to " + value);
+
+                if (IsThirdPerson(_currentFPMode) && !IsThirdPerson(value))
+                {
+                    _currentFPMode = value;
+                    SetFirstPerson(GameCamera.instance, true);
+                }
+                else if (!IsThirdPerson(_currentFPMode) && IsThirdPerson(value))
+                {
+                    _currentFPMode = value;
+                    SetFirstPerson(GameCamera.instance, false);
+                }
+                else
+                {
+                    _currentFPMode = value;
+                }
+
+                ChangeMode(GameCamera.instance);
+            }
+        }
+
+        private static bool IsThirdPerson(FirstPersonModes mode)
+        {
+            return mode == FirstPersonModes.ThirdPerson;
+        }
 
         [HarmonyPatch(typeof(Player), "SetControls")]
         [HarmonyPostfix]
@@ -434,5 +473,7 @@ namespace Loki.Mods
         ThirdPerson,
         FirstPersonHelmet,
         FirstPersonNoHelmet,
+        FirstPersonOnlyWeapons,
+        FirstPersonNoBody,
     }
 }

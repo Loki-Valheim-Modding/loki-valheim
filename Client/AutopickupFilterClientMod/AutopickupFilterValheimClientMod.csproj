@@ -7,8 +7,8 @@
     <ProjectGuid>{D72F5BF5-3349-4F52-9396-B2A53A106EBA}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AutopickupFilterClientMod</RootNamespace>
-    <AssemblyName>AutopickupFilterClientMod</AssemblyName>
+    <RootNamespace>AutopickupFilterValheimClientMod</RootNamespace>
+    <AssemblyName>AutopickupFilterValheimClientMod</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -89,7 +89,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AutopickupFilterClientMod.cs" />
+    <Compile Include="AutopickupFilterValheimClientMod.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

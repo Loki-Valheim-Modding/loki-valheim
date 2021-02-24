@@ -8,10 +8,10 @@ using BepInEx.Configuration;
 using HarmonyLib;
 using UnityEngine;
 
-namespace AutopickupFilterClientMod
+namespace AutopickupFilterValheimClientMod
 {
     [BepInPlugin("com.loki.clientmods.valheim.autopickupfilter", "Autopickup Filter", "1.0.0.0")]
-    public class AutopickupFilterClientMod : BaseUnityPlugin
+    public class AutopickupFilterValheimClientMod : BaseUnityPlugin
     {
         private static LootOption lootmode = LootOption.BlockTrash;
         private static bool blockTrophies;
@@ -57,7 +57,7 @@ namespace AutopickupFilterClientMod
             blockTrophies = _configBlockTrophiesTrash.Value;
             switchModeKey = _configChangeModeKey.Value.MainKey;
 
-            Harmony.CreateAndPatchAll(typeof(AutopickupFilterClientMod));
+            Harmony.CreateAndPatchAll(typeof(AutopickupFilterValheimClientMod));
         }
 
         [HarmonyPatch(typeof(ItemDrop), "Start")]

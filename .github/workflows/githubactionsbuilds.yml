@@ -40,6 +40,7 @@ jobs:
         }
         Copy-Item "Build/ModsBuildOutput/*ValheimClientMod.dll" "Build/ModsOutput"
 
+        7z a -mm=Deflate -mfb=258 -mpass=15 "Build/ModsOutput/ClientMods.zip" "Build/ModsOutput/*.dll" '-x!*.pdb'
     - name: Upload WebApp1 Build Artifact
       uses: actions/upload-artifact@v2
       with:
@@ -62,15 +63,25 @@ jobs:
           cd Build
           cd ModsOutput
           dir
-    # - name: Create Release
-    #   id: create_release
-    #   uses: actions/create-release@v1
-    #   env:
-    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-    #   with:
-    #     tag_name: 1.0.${{needs.generate_version_number.outputs.build_number}}
-    #     release_name: 1.0.${{needs.generate_version_number.outputs.build_number}}
-    #     body: |
-    #       ${{ github.event.head_commit.message }}
-    #     draft: false
-    #     prerelease: false
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      with:
+        tag_name: ${{github.event.inputs.version}}
+        release_name: ${{github.event.inputs.version}}
+        body: |
+          ${{ github.events.input.releaseNotes }}
+        draft: false
+        prerelease: false
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{github.event.inputs.version}}
+        files: |
+          ./Build/ModsOutput/*.dll
+          ./Build/ModsOutput/*.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

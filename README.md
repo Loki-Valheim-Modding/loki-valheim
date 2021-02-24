@@ -3,6 +3,8 @@
 [![GitHubActions Builds](https://github.com/Loki-Valheim-Modding/loki-valheim/workflows/GitHubActionsBuilds/badge.svg)](https://github.com/Loki-Valheim-Modding/loki-valheim/actions/workflows/githubactionsbuilds.yml)
 </p>
 
+[![GitHubActions Builds](https://github.com/Loki-Valheim-Modding/loki-valheim/workflows/GitHubActionsBuilds/badge.svg)](https://github.com/Loki-Valheim-Modding/loki-valheim/actions/workflows/githubactionsbuilds.yml)
+
 Download the specific mod you want [here](https://github.com/Loki-Valheim-Modding/loki-valheim/releases).
 
 ## Use

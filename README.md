@@ -4,6 +4,12 @@
 
 Download the specific mod you want [here](https://github.com/Loki-Valheim-Modding/loki-valheim/releases/tag/v1.0.0).
 
+## Build status
+
+| GitHubActions Builds |
+|:--------------------:|
+| [![GitHubActions Builds](https://github.com/devedse/loki-valheim/workflows/GitHubActionsBuilds/badge.svg)](https://github.com/devedse/loki-valheim/actions/workflows/githubactionsbuilds.yml) |
+
 ## Use
 
 - Navigate to the Valheim game directory

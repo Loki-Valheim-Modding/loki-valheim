@@ -17,6 +17,7 @@ namespace Loki.Mods
     {
         // Statics done because injection requires static methods
         private static Action<bool> _setVisible;
+        private static Animator _animator;
         private static MethodInfo _setVisibleFieldInfo;
         private static FieldInfo _characterFieldInfo;
         private static FieldInfo _currentZoomDistance;
@@ -195,7 +196,7 @@ namespace Loki.Mods
         {
             yield return new WaitForSeconds(0.1f);
             _setVisible = null;
-
+            _animator = Player.m_localPlayer.GetComponentInChildren<Animator>();
             CurrentFPMode = _statesAllowed.First();
         }
 
@@ -361,7 +362,10 @@ namespace Loki.Mods
 
             if (!IsThirdPerson(CurrentFPMode))
             {
-                __instance.FaceLookDirection();
+                if (!IsDodging(__instance))
+                {
+                    __instance.FaceLookDirection();
+                }
 
                 bool visible = true;
 
@@ -388,6 +392,11 @@ namespace Loki.Mods
 
                 _setVisible(visible);
             }
+        }
+
+        private static bool IsDodging(Player __instance)
+        {
+            return __instance.IsDodgeInvincible() || _animator.GetCurrentAnimatorStateInfo(0).IsName("Dodge");
         }
 
         private static FirstPersonModes CurrentFPMode

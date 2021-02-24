@@ -49,6 +49,7 @@ jobs:
   create_release:
     runs-on: windows-latest
     needs: build_windows
+    if: github.event.inputs.version != '' && github.events.input.releaseNotes != ''
     steps:
       - name: Test
         run: Write-Host "Yeah now I'm making a release"

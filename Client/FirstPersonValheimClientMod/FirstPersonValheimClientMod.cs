@@ -35,6 +35,7 @@ namespace Loki.Mods
         private static ConfigEntry<bool> _overrideFoV;
         private static ConfigEntry<int> _configFoVThirdPerson;
         private static ConfigEntry<int> _configFoVFirstPerson;
+        private static ConfigEntry<bool> _configShowMessageOnSwitching;
         private static Transform _helmetAttach;
         private static Transform _jaw;
         private static Vector3 _originalHeadScale;
@@ -56,7 +57,7 @@ namespace Loki.Mods
             _meleeAimFix = Config.Bind("Body", "MeleeAimFix", true, "[Experimental] Changes the default melee attack direction (which is always straight forward from your body) into a direction based on your head camera.");
             _configStatesAllowed = Config.Bind("Body", "Modes", String.Join(",", (new FirstPersonModes[] { FirstPersonModes.FirstPersonNoHelmet, FirstPersonModes.ThirdPerson }).Select(x => x.ToString())), "The list of modes that you want to be able to cycle through when the hotkey is pressed. The first entry is the mode used when the game starts. Current functional options: ThirdPerson, FirstPersonHelmet, FirstPersonNoHelmet, FirstPersonNoBody");
             _allowScrollToChangeState = Config.Bind("Controls", "AllowScrolling", true, "When using the scroll zoom option, scroll into and out of first person. When going from third person into first person, it takes the option that comes after ThirdPerson. When going from first person into third person, if there is no ThirdPerson in the list, it will stay in first person when zooming in.");
-
+            _configShowMessageOnSwitching = Config.Bind("Controls", "ShowMessageWhenSwitching", true, "Show a notification message in the topleft when switching camera mode");
             _overrideFoV = Config.Bind("Camera", "OverrideFoV", false, "Override the game's default FoV of 65 with your own setting");
             _configFoVThirdPerson = Config.Bind("Camera", "FovThirdPerson", 90, "The FoV used when in third person");
             _configFoVFirstPerson = Config.Bind("Camera", "FovFirstPerson", 90, "The FoV used when in first person");
@@ -410,7 +411,10 @@ namespace Loki.Mods
                 if (_currentFPMode == value)
                     return;
 
-                Player.m_localPlayer.Message(MessageHud.MessageType.TopLeft, "Changing camera to " + value);
+                if (_configShowMessageOnSwitching.Value)
+                {
+                    Player.m_localPlayer.Message(MessageHud.MessageType.TopLeft, "Changing camera to " + value);
+                }
 
                 if (IsThirdPerson(_currentFPMode) && !IsThirdPerson(value))
                 {

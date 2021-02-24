@@ -1,6 +1,14 @@
 name: GitHubActionsBuilds
 
 on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'The version (e.g. 5.5.0)'
+        required: false
+      releaseNotes:
+        description: 'The release notes'
+        required: false
   push:
     branches: [ development ]
   pull_request:
@@ -26,4 +34,27 @@ jobs:
       run: tree /a
     - name: Run build
       run: |
-        dotnet build Loki-Valheim-ClientMods.sln
+        dotnet build Loki-Valheim-ClientMods.sln -c Release -o "Build/ModsBuildOutput"
+        if (!(Test-Path "Build/ModsOutput" -PathType Container)) {
+            New-Item "Build/ModsOutput" -ItemType "directory"
+        }
+        Copy-Item "Build/ModsBuildOutput/*ValheimClientMod.dll" "Build/ModsOutput"
+
+    - name: Upload WebApp1 Build Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: ModsOutput
+        path: Build/ModsOutput
+
+    # - name: Create Release
+    #   id: create_release
+    #   uses: actions/create-release@v1
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+    #   with:
+    #     tag_name: 1.0.${{needs.generate_version_number.outputs.build_number}}
+    #     release_name: 1.0.${{needs.generate_version_number.outputs.build_number}}
+    #     body: |
+    #       ${{ github.event.head_commit.message }}
+    #     draft: false
+    #     prerelease: false

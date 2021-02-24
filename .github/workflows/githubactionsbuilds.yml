@@ -1,0 +1,83 @@
+name: GitHubActionsBuilds
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'The version (e.g. 5.5.0)'
+        required: false
+      releaseNotes:
+        description: 'The release notes'
+        required: false
+  push:
+    branches: [ development ]
+  pull_request:
+    branches: [ development ]
+
+jobs:
+  build_windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core @ Latest
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+    - name: Run SetupBuildEnv.ps1 script
+      run: .\Scripts\SetupBuildEnv.ps1
+      shell: powershell
+    - name: Tree
+      run: tree /a
+    - name: Run build
+      run: |
+        dotnet build Loki-Valheim-ClientMods.sln -c Release -o "Build/ModsBuildOutput"
+        if (!(Test-Path "Build/ModsOutput" -PathType Container)) {
+            New-Item "Build/ModsOutput" -ItemType "directory"
+        }
+        Copy-Item "Build/ModsBuildOutput/*ValheimClientMod.dll" "Build/ModsOutput"
+
+        7z a -mm=Deflate -mfb=258 -mpass=15 "Build/ModsOutput/ClientMods.zip" "Build/ModsOutput/*.dll" '-x!*.pdb'
+    - name: Upload WebApp1 Build Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: ModsOutput
+        path: Build/ModsOutput
+
+  create_release:
+    runs-on: windows-latest
+    needs: build_windows
+    if: github.event.inputs.version != '' && github.event.inputs.releaseNotes != ''
+    steps:
+      - name: Test
+        run: Write-Host "Yeah now I'm making a release"
+      - uses: actions/download-artifact@v2
+        with:
+          name: ModsOutput
+          path: Build/ModsOutput
+      - name: Test2
+        run: |
+          cd Build
+          cd ModsOutput
+          dir
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{github.event.inputs.version}}
+          release_name: ${{github.event.inputs.version}}
+          body: |
+            ${{ github.event.inputs.releaseNotes }}
+          draft: false
+          prerelease: false
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{github.event.inputs.version}}
+          files: |
+            ./Build/ModsOutput/*.dll
+            ./Build/ModsOutput/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -9,7 +9,7 @@ if (!(Test-Path "Build/SteamCMD" -PathType Container)) {
 if (!(Test-Path "Build/SteamCMD/steamcmd.exe" -PathType Leaf)) {
     Write-Host "Downloading SteamCMD"
     Invoke-WebRequest -Uri "https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip" -OutFile "Build/SteamCMD/steamcmd.zip"
-    Expand-Archive -LiteralPath "Build/SteamCMD/steamcmd.zip" -DestinationPath "Build/SteamCMD/" -Force
+    & 7z e -y "Build/SteamCMD/steamcmd.zip" -oBuild/SteamCMD/
 }
 
 #Game
@@ -31,7 +31,7 @@ Invoke-WebRequest -Uri "https://cdn.discordapp.com/attachments/62391009113289523
 & 7z e -y "Build/unstripped_managed.7z" -oBuild/Libs
 
 Invoke-WebRequest -Uri "https://github.com/BepInEx/BepInEx/releases/download/v5.4.5/BepInEx_x64_5.4.5.0.zip" -OutFile "Build/BepInEx_x64.zip"
-Expand-Archive -LiteralPath "Build/BepInEx_x64.zip" -DestinationPath "Build/Libs/" -Force
+& 7z e -y "Build/BepInEx_x64.zip" -oBuild/Libs "BepInEx/core"
 
 
 if (!(Test-Path "Libs" -PathType Container)) {

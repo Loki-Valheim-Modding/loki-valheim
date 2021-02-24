@@ -9,7 +9,7 @@ Download the specific mod you want [here](https://github.com/Loki-Valheim-Moddin
 
 | GitHubActions Builds |
 |:--------------------:|
-| [![GitHubActions Builds](https://github.com/devedse/loki-valheim/workflows/GitHubActionsBuilds/badge.svg)](https://github.com/devedse/loki-valheim/actions/workflows/githubactionsbuilds.yml) |
+| [![GitHubActions Builds](https://github.com/Loki-Valheim-Modding/loki-valheim/workflows/GitHubActionsBuilds/badge.svg)](https://github.com/Loki-Valheim-Modding/loki-valheim/actions/workflows/githubactionsbuilds.yml) |
 
 ## Use
 

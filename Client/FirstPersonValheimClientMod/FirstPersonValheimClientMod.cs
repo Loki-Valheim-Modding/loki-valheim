@@ -29,7 +29,9 @@ namespace Loki.Mods
         private static ConfigEntry<bool> _jawFix;
         private static ConfigEntry<bool> _meleeAimFix;
         private static ConfigEntry<bool> _defaultState;
-
+        private static ConfigEntry<bool> _overrideFoV;
+        private static ConfigEntry<int> _configFoVThirdPerson;
+        private static ConfigEntry<int> _configFoVFirstPerson;
         private static Transform _helmetAttach;
         private static Transform _jaw;
         private static Vector3 _originalHeadScale;
@@ -50,6 +52,10 @@ namespace Loki.Mods
             _jawFix = Config.Bind("Body", "JawFix", false, "[Experimental] Tries to fix the visible jaw when helmet is set to be shown (even when not wearing a helmet). Might cause other artifacts for certain helmets.");
             _meleeAimFix = Config.Bind("Body", "MeleeAimFix", true, "[Experimental] Changes the default melee attack direction (which is always straight forward from your body) into a direction based on your head camera.");
             _defaultState = Config.Bind("Controls", "StartsEnabled", true);
+
+            _overrideFoV = Config.Bind("Camera", "OverrideFoV", false, "Override the game's default FoV of 65 with your own setting");
+            _configFoVThirdPerson = Config.Bind("Camera", "FovThirdPerson", 90, "The FoV used when in third person");
+            _configFoVFirstPerson = Config.Bind("Camera", "FovFirstPerson", 90, "The FoV used when in first person");
 
             _setVisibleFieldInfo = typeof(Character).GetMethod("SetVisible", BindingFlags.NonPublic | BindingFlags.Instance);
             _characterFieldInfo = AccessTools.Field(typeof(Attack), "m_character");
@@ -243,6 +249,9 @@ namespace Loki.Mods
                 _jaw = FindTransform(_head, "Jaw");
                 _originalHeadScale = _head.localScale;
                 _originalJawScale = _jaw.localScale;
+
+                if (_overrideFoV.Value)
+                    __instance.m_fov = _configFoVFirstPerson.Value;
             }
             else
             {
@@ -257,6 +266,9 @@ namespace Loki.Mods
                     _head.localScale = _originalHeadScale;
                     _jaw.localScale = _originalJawScale;
                 }
+
+                if (_overrideFoV.Value)
+                    __instance.m_fov = _configFoVThirdPerson.Value;
             }
         }
 

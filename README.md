@@ -2,7 +2,9 @@
    <img src="https://raw.githubusercontent.com/Loki-Valheim-Modding/loki-valheim/development/logo.png"/>
 </p>
 
-Works for Valheim 0.145.6 (2021-02-16)
+Works for Valheim 0.145.6 (2021-02-16).
+
+Download the specific mod you want [here](https://github.com/Loki-Valheim-Modding/loki-valheim/releases/tag/v1.0.0).
 
 ## Use
 

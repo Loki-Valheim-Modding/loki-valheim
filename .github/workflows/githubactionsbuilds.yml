@@ -19,8 +19,8 @@ jobs:
       uses: crazy-max/ghaction-chocolatey@v1
       with:
         args: install 7z -y
-    - name: Run GoPackage.ps1 script
-      run: .\Scripts\GoPackage.ps1
+    - name: Run SetupBuildEnv.ps1 script
+      run: .\Scripts\SetupBuildEnv.ps1
       shell: powershell
     - name: Run build
       run: |

@@ -15,10 +15,10 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.x
-    - name: Choco install 7z
+    - name: Choco install 7zip
       uses: crazy-max/ghaction-chocolatey@v1
       with:
-        args: install 7z -y
+        args: install 7zip -y
     - name: Run SetupBuildEnv.ps1 script
       run: .\Scripts\SetupBuildEnv.ps1
       shell: powershell

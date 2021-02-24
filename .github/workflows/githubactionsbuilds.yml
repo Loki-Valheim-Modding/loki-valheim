@@ -26,8 +26,6 @@ jobs:
     - name: Run SetupBuildEnv.ps1 script
       run: .\Scripts\SetupBuildEnv.ps1
       shell: powershell
-    - name: Tree
-      run: tree /a
     - name: Run build
       run: |
         $version = '${{github.event.inputs.version}}'
@@ -52,17 +50,10 @@ jobs:
     needs: build_windows
     if: github.event.inputs.version != '' && github.event.inputs.releaseNotes != ''
     steps:
-      - name: Test
-        run: Write-Host "Yeah now I'm making a release"
       - uses: actions/download-artifact@v2
         with:
           name: ModsOutput
           path: Build/ModsOutput
-      - name: Test2
-        run: |
-          cd Build
-          cd ModsOutput
-          dir
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1

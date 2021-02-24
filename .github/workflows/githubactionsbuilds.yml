@@ -23,10 +23,6 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.x
-    # - name: Choco install 7zip
-    #   uses: crazy-max/ghaction-chocolatey@v1
-    #   with:
-    #     args: install 7zip -y
     - name: Run SetupBuildEnv.ps1 script
       run: .\Scripts\SetupBuildEnv.ps1
       shell: powershell
@@ -50,7 +46,7 @@ jobs:
   create_release:
     runs-on: windows-latest
     needs: build_windows
-    if: github.event.inputs.version != '' && github.event.input.releaseNotes != ''
+    if: github.event.inputs.version != '' && github.event.inputs.releaseNotes != ''
     steps:
       - name: Test
         run: Write-Host "Yeah now I'm making a release"
@@ -72,7 +68,7 @@ jobs:
           tag_name: ${{github.event.inputs.version}}
           release_name: ${{github.event.inputs.version}}
           body: |
-            ${{ github.events.input.releaseNotes }}
+            ${{ github.event.inputs.releaseNotes }}
           draft: false
           prerelease: false
 

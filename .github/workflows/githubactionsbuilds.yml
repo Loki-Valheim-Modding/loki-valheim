@@ -46,6 +46,12 @@ jobs:
         name: ModsOutput
         path: Build/ModsOutput
 
+  create_release:
+    runs-on: windows-latest
+    needs: build_windows
+    steps:
+      - name: Test
+        run: Write-Host "Yeah now I'm making a release"
     # - name: Create Release
     #   id: create_release
     #   uses: actions/create-release@v1

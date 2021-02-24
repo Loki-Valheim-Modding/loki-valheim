@@ -12,7 +12,7 @@ Download the specific mod you want [here](https://github.com/Loki-Valheim-Moddin
    - [CHECK] Make sure the folder structure is `Valheim\BepInEx\core` and the Valheim folder has the file `winhttp.dll`.
 - Grab & unpack into `Valheim\valheim_Data\Managed` (confirm to overwrite): https://cdn.discordapp.com/attachments/623910091132895232/809851661975420989/unstripped_managed.7z
 - Create a folder `plugins` so you end up with `Valheim\BepInEx\plugins`
-- Download the mod DLLs you want from the [releases section]((https://github.com/Loki-Valheim-Modding/loki-valheim/releases/tag/v1.0.0)).
+- Download the mod DLLs you want from the [releases section](https://github.com/Loki-Valheim-Modding/loki-valheim/releases/tag/v1.0.0).
 - Copy the downloaded mod DLLs to `BepInEx\plugins`
 - Run the game!
   - [OPTIONAL]: After running the game at least once, navigate to `BepInEx\config` to edit mod configurations by opening them with a text editor, then run the game again!

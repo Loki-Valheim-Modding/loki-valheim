@@ -22,6 +22,8 @@ jobs:
     - name: Run SetupBuildEnv.ps1 script
       run: .\Scripts\SetupBuildEnv.ps1
       shell: powershell
+    - name: Tree
+      run: tree
     - name: Run build
       run: |
         dotnet build Loki-Valheim-ClientMods.sln

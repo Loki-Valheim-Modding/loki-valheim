@@ -15,7 +15,6 @@ namespace AutopickupFilterValheimClientMod
     {
         private static LootOption lootmode = LootOption.BlockTrash;
         private static bool blockTrophies;
-        private static KeyCode switchModeKey;
         static string[] trash = new string[]
         {
             "$item_stone",
@@ -55,7 +54,6 @@ namespace AutopickupFilterValheimClientMod
             lootmode = _configLootmode.Value;
             trash = _configTrashList.Value.Split(',');
             blockTrophies = _configBlockTrophiesTrash.Value;
-            switchModeKey = _configChangeModeKey.Value.MainKey;
 
             Harmony.CreateAndPatchAll(typeof(AutopickupFilterValheimClientMod));
         }
@@ -100,7 +98,7 @@ namespace AutopickupFilterValheimClientMod
 
         void Update()
         {
-            if (Input.GetKeyDown(switchModeKey))
+            if (IsDown(_configChangeModeKey.Value) && Player.m_localPlayer != null && !Console.IsVisible() && !TextInput.IsVisible() && !Minimap.InTextInput() && !Menu.IsVisible())
             {
                 switch (lootmode)
                 {
@@ -138,6 +136,25 @@ namespace AutopickupFilterValheimClientMod
                 Player.m_localPlayer.Message(MessageHud.MessageType.TopLeft, "Autoloot filter set to " + lootmode);
             }
         }
+        private static bool IsDown(KeyboardShortcut value)
+        {
+            if (Input.GetKeyDown(value.MainKey))
+            {
+                if (value.Modifiers != null)
+                {
+                    foreach (var mod in value.Modifiers)
+                    {
+                        if (!Input.GetKey(mod))
+                        {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
+
     }
 
     public enum LootOption

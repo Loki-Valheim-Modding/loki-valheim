@@ -19,12 +19,14 @@ namespace Loki.Mods
         private static Action<bool> _setVisible;
         private static MethodInfo _setVisibleFieldInfo;
         private static FieldInfo _characterFieldInfo;
+        private static FieldInfo _currentZoomDistance;
         private static FirstPersonModes _currentFPMode = FirstPersonModes.ThirdPerson;
 
         private static float _oldNearPlane;
         private static ConfigEntry<float> _fspNearPlane;
         private static ConfigEntry<KeyboardShortcut> _hotkey;
         private static ConfigEntry<string> _configStatesAllowed;
+        private static ConfigEntry<bool> _allowScrollToChangeState;
         private static ConfigEntry<bool> _showBodyWhenAiming;
         private static ConfigEntry<bool> _showBodyWhenBlocking;
         private static ConfigEntry<bool> _jawFix;
@@ -52,6 +54,7 @@ namespace Loki.Mods
             _jawFix = Config.Bind("Body", "JawFix", false, "[Experimental] Tries to fix the visible jaw when helmet is set to be shown (even when not wearing a helmet). Might cause other artifacts for certain helmets.");
             _meleeAimFix = Config.Bind("Body", "MeleeAimFix", true, "[Experimental] Changes the default melee attack direction (which is always straight forward from your body) into a direction based on your head camera.");
             _configStatesAllowed = Config.Bind("Body", "Modes", String.Join(",", (new FirstPersonModes[] { FirstPersonModes.FirstPersonNoHelmet, FirstPersonModes.ThirdPerson }).Select(x => x.ToString())), "The list of modes that you want to be able to cycle through when the hotkey is pressed. The first entry is the mode used when the game starts. Current functional options: ThirdPerson, FirstPersonHelmet, FirstPersonNoHelmet, FirstPersonNoBody");
+            _allowScrollToChangeState = Config.Bind("Controls", "AllowScrolling", true, "When using the scroll zoom option, scroll into and out of first person. When going from third person into first person, it takes the option that comes after ThirdPerson. When going from first person into third person, if there is no ThirdPerson in the list, it will stay in first person when zooming in.");
 
             _overrideFoV = Config.Bind("Camera", "OverrideFoV", false, "Override the game's default FoV of 65 with your own setting");
             _configFoVThirdPerson = Config.Bind("Camera", "FovThirdPerson", 90, "The FoV used when in third person");
@@ -59,6 +62,8 @@ namespace Loki.Mods
 
             _setVisibleFieldInfo = typeof(Character).GetMethod("SetVisible", BindingFlags.NonPublic | BindingFlags.Instance);
             _characterFieldInfo = AccessTools.Field(typeof(Attack), "m_character");
+            _currentZoomDistance = AccessTools.Field(typeof(GameCamera), "m_distance");
+
 
             if (_configStatesAllowed.Value == null || !_configStatesAllowed.Value.Any())
             {
@@ -202,28 +207,33 @@ namespace Loki.Mods
             // Toggle FPS on H
             if (IsDown(_hotkey.Value) && Player.m_localPlayer != null && !Console.IsVisible() && !TextInput.IsVisible() && !Minimap.InTextInput() && !Menu.IsVisible())
             {
-                if (_statesAllowed.Contains(CurrentFPMode))
-                {
-                    var index = _statesAllowed.IndexOf(CurrentFPMode) + 1;
-                    if (index >= _statesAllowed.Count)
-                        index = 0;
-                    CurrentFPMode = _statesAllowed[index];
-                }
-                else
-                {
-                    CurrentFPMode = _statesAllowed.First();
-                }
+                CycleMode();
             }
 
             if (CurrentFPMode == FirstPersonModes.FirstPersonHelmet || CurrentFPMode == FirstPersonModes.FirstPersonNoBody || CurrentFPMode == FirstPersonModes.FirstPersonOnlyWeapons)
             {
                 pos = _helmetAttach.position;
             }
-            else if (CurrentFPMode == FirstPersonModes.FirstPersonNoHelmet )
+            else if (CurrentFPMode == FirstPersonModes.FirstPersonNoHelmet)
             {
                 _head.localScale = _originalHeadScale;
                 pos = _helmetAttach.position;
                 _head.localScale = new Vector3(0.0001f, 0.0001f, 0.0001f);
+            }
+        }
+
+        private static void CycleMode()
+        {
+            if (_statesAllowed.Contains(CurrentFPMode))
+            {
+                var index = _statesAllowed.IndexOf(CurrentFPMode) + 1;
+                if (index >= _statesAllowed.Count)
+                    index = 0;
+                CurrentFPMode = _statesAllowed[index];
+            }
+            else
+            {
+                CurrentFPMode = _statesAllowed.First();
             }
         }
 
@@ -317,6 +327,31 @@ namespace Loki.Mods
             // See Player code aborting on desync issues
             if (___m_nview == null || ___m_nview.GetZDO() == null || !___m_nview.IsOwner() || Player.m_localPlayer != __instance)
                 return;
+
+            if (_allowScrollToChangeState.Value)
+            {
+                var scroll = Input.GetAxis("Mouse ScrollWheel");
+                if (scroll < 0)
+                {
+                    // zoom out
+                    if (!IsThirdPerson(CurrentFPMode) && _statesAllowed.Contains(FirstPersonModes.ThirdPerson))
+                    {
+                        CurrentFPMode = FirstPersonModes.ThirdPerson;
+                    }
+                }
+                else if (scroll > 0)
+                {
+                    // zoom in
+                    if (IsThirdPerson(CurrentFPMode))
+                    {
+                        var gc = GameCamera.instance;
+                        if ((float)_currentZoomDistance.GetValue(gc) <= gc.m_minDistance)
+                        {
+                            CycleMode();
+                        }
+                    }
+                }
+            }
 
             // Late bind to instance
             if (_setVisible == null)

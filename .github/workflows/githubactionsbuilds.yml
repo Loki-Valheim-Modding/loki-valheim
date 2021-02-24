@@ -1,0 +1,27 @@
+name: GitHubActionsBuilds
+
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  build_windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core @ Latest
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+    - name: Choco help
+      uses: crazy-max/ghaction-chocolatey@v1
+      with:
+        args: install 7z -y
+    - name: Run GoPackage.ps1 script
+      run: .\Scripts\GoPackage.ps1
+      shell: powershell
+    - name: Run build
+      run: |
+        dotnet build Loki-Valheim-ClientMods.sln

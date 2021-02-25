@@ -330,7 +330,7 @@ namespace Loki.Mods
             if (___m_nview == null || ___m_nview.GetZDO() == null || !___m_nview.IsOwner() || Player.m_localPlayer != __instance)
                 return;
 
-            if (_allowScrollToChangeState.Value)
+            if (!__instance.InPlaceMode() && _allowScrollToChangeState.Value)
             {
                 var scroll = Input.GetAxis("Mouse ScrollWheel");
                 if (scroll < 0)

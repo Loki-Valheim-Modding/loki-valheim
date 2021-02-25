@@ -21,14 +21,20 @@ namespace ImmersionModValheimClientMod
         private static List<GameObject> _customHudThings = new List<GameObject>();
         private static bool firstTickRestingEtc;
 
+        private static ConfigEntry<string> _configShownPinTypes;
+        private static List<Minimap.PinType> _shownPinTypes;
+
         void Awake()
         {
             m_pinsField = AccessTools.Field(typeof(Minimap), "m_pins");
 
-            _configEnabled = Config.Bind("Settings", "EnableMod", false, "Enables the mod if true");
+            _configEnabled = Config.Bind("Settings", "EnableMod", true, "Enables the mod if true");
             _distanceMultiplier = Config.Bind("Settings", "DistanceMultiplier", 1f, "The max distance multiplier of known boss points that your meditation radar can see. Your resting bonus timer (in seconds) is multiplied with this value to determine the max distance");
 
-            if (_configEnabled.Value)
+            _configShownPinTypes = Config.Bind("Settings", "ShownPinTypes", "Boss", "The type of pins that are shown when resting. There are many other pin types you can use besides Boss, such as Bed or Death. Separate them by commas (e.g. Boss,Bed,Death to enable those 3)");
+            _shownPinTypes = _configShownPinTypes.Value.Split(',').Select(x => (Minimap.PinType)Enum.Parse(typeof(Minimap.PinType), x.Trim())).ToList();
+
+            if (_configEnabled.Value && _shownPinTypes.Any())
             {
                 Harmony.CreateAndPatchAll(typeof(MeditationClientMod));
             }
@@ -68,7 +74,7 @@ namespace ImmersionModValheimClientMod
                     var maxDistance = duration * _distanceMultiplier.Value;
 
                     var pins = (List<Minimap.PinData>)m_pinsField.GetValue(Minimap.instance);
-                    foreach (var pin in pins.Where(x => x.m_type == Minimap.PinType.Boss))
+                    foreach (var pin in pins.Where(x => _shownPinTypes.Contains(x.m_type)))
                     {
                         var pos = pin.m_pos;
 

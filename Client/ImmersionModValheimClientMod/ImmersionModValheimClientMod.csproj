@@ -95,6 +95,7 @@
     <Compile Include="MeditationClientMod.cs" />
     <Compile Include="MinimapControlsValheimClientMod.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="LokiUtils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

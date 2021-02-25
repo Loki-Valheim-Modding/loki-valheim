@@ -6,26 +6,30 @@ using HarmonyLib;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace Loki.Mods {
+namespace ImmersionModValheimClientMod {
     
     /// <summary>
     /// Allows disabling the minimap.
     /// </summary>
     [BepInPlugin("com.loki.clientmods.valheim.immersion.minimap", "Minimap Control Mod", "1.0.0.0")]
     public class MinimapControlsValheimClientMod : BaseUnityPlugin {
-        
+        private ConfigEntry<bool> _configEnabled;
+        private static ConfigEntry<bool> _allowToggle;
         private static ConfigEntry<KeyboardShortcut> _toggleMinimap;
-        private static ConfigEntry<bool> _defaultState;
         
         private static bool _disableMinimap;
         
         void Awake() {
-            _toggleMinimap = Config.Bind("Controls", "Hotkey", new KeyboardShortcut(KeyCode.O, KeyCode.LeftControl));
-            _defaultState = Config.Bind("Controls", "StartsHidden", true);
 
-            _disableMinimap = _defaultState.Value;
+            _configEnabled = Config.Bind("Settings", "EnableMod", true, "Enables the mod if true");
+            _allowToggle = Config.Bind("Settings", "AllowShown", true, "Allows the minimap to be toggled by hotkey. Disable this if you never want the minimap");
+            _toggleMinimap = Config.Bind("Controls", "Hotkey", new KeyboardShortcut(KeyCode.O, KeyCode.LeftControl), "If allowed to toggle the minimap, use this hotkey to toggle it");
+            _disableMinimap = true;
             
-            Harmony.CreateAndPatchAll(typeof(MinimapControlsValheimClientMod));
+            if (_configEnabled.Value)
+            {
+                Harmony.CreateAndPatchAll(typeof(MinimapControlsValheimClientMod));
+            }
         }
 
 
@@ -38,7 +42,7 @@ namespace Loki.Mods {
                 return;
             }
 
-            if (_toggleMinimap.Value.IsDown()) {
+            if (_allowToggle.Value && LokiUtils.IsDown(_toggleMinimap.Value)) {
                 _disableMinimap = !_disableMinimap;
                 
                 // Ensure that we re-enable the small root if we toggle.

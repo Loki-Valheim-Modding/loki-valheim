@@ -17,7 +17,7 @@ namespace ImmersionModValheimClientMod
 
         void Awake()
         {
-            _configEnabled = Config.Bind("Settings", "Enabled", true, "Whether to enable this mod.");
+            _configEnabled = Config.Bind("Settings", "EnableMod", true, "Whether to enable this mod.");
             
             if (_configEnabled.Value)
             {

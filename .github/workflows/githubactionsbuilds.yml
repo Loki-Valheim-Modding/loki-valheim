@@ -26,11 +26,13 @@ jobs:
     - name: Run SetupBuildEnv.ps1 script
       run: .\Scripts\SetupBuildEnv.ps1
       shell: powershell
-    - name: Tree
-      run: tree /a
     - name: Run build
       run: |
-        dotnet build Loki-Valheim-ClientMods.sln -c Release -o "Build/ModsBuildOutput"
+        $version = '${{github.event.inputs.version}}'
+        if ([string]::IsNullOrEmpty($version)) {
+          $version = '1.0.0'
+        }
+        dotnet build Loki-Valheim-ClientMods.sln -c Release -o "Build/ModsBuildOutput" /p:Version=$version
         if (!(Test-Path "Build/ModsOutput" -PathType Container)) {
             New-Item "Build/ModsOutput" -ItemType "directory"
         }
@@ -48,17 +50,10 @@ jobs:
     needs: build_windows
     if: github.event.inputs.version != '' && github.event.inputs.releaseNotes != ''
     steps:
-      - name: Test
-        run: Write-Host "Yeah now I'm making a release"
       - uses: actions/download-artifact@v2
         with:
           name: ModsOutput
           path: Build/ModsOutput
-      - name: Test2
-        run: |
-          cd Build
-          cd ModsOutput
-          dir
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1

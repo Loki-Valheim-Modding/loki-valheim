@@ -92,6 +92,7 @@
     <Compile Include="BuildWithoutWorkbenchClientMod.cs" />
     <Compile Include="HideCrosshairClientMod.cs" />
     <Compile Include="HideEnemyHealthBarsClientMod.cs" />
+    <Compile Include="MeditationClientMod.cs" />
     <Compile Include="MinimapControlsValheimClientMod.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

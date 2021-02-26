@@ -336,6 +336,22 @@ namespace Loki.Mods
             }
         }
 
+        [HarmonyPatch(typeof(VisEquipment), "AttachItem")]
+        [HarmonyPostfix]
+        static void FixHelmetScale(Transform joint, ref GameObject __result)
+        {
+            if (__result == null)
+                return;
+
+            if (joint == _helmetAttach)
+            {
+                if (CurrentFPMode == FirstPersonModes.FirstPersonNoHelmet)
+                {
+                    __result.transform.localScale = Vector3.one;
+                }
+            }
+        }
+
         static void ChangeMode(GameCamera __instance)
         {
             var visEqu = Player.m_localPlayer.GetComponentInChildren<VisEquipment>();

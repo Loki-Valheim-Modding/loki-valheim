@@ -36,6 +36,7 @@ namespace Loki.Mods
         private static ConfigEntry<int> _configFoVThirdPerson;
         private static ConfigEntry<int> _configFoVFirstPerson;
         private static ConfigEntry<bool> _configShowMessageOnSwitching;
+        private static ConfigEntry<bool> _VPlusCompatibility;
         private static Transform _helmetAttach;
         private static Transform _jaw;
         private static Vector3 _originalHeadScale;
@@ -45,6 +46,10 @@ namespace Loki.Mods
         private static bool _isAimingBow;
         private static FirstPersonValheimClientMod _thisMod;
         private static List<FirstPersonModes> _statesAllowed;
+
+        private static Type _vplusTypeAem;
+        private static Type _vplusTypeAbm;
+        private static FieldInfo _inventoryAnimator;
 
         void Awake()
         {
@@ -65,6 +70,9 @@ namespace Loki.Mods
             _setVisibleFieldInfo = typeof(Character).GetMethod("SetVisible", BindingFlags.NonPublic | BindingFlags.Instance);
             _characterFieldInfo = AccessTools.Field(typeof(Attack), "m_character");
             _currentZoomDistance = AccessTools.Field(typeof(GameCamera), "m_distance");
+            _inventoryAnimator = AccessTools.Field(typeof(InventoryGui), "m_animator");
+
+            _VPlusCompatibility = Config.Bind("Compatibility", "ValheimPlus", false, "Experimental compatibility mode with ValheimPlus. Enabling this will prevent zooming when in their build/edit mode.");
 
 
             if (_configStatesAllowed.Value == null || !_configStatesAllowed.Value.Any())
@@ -199,6 +207,8 @@ namespace Loki.Mods
             _setVisible = null;
             _animator = Player.m_localPlayer.GetComponentInChildren<Animator>();
             CurrentFPMode = _statesAllowed.First();
+
+
         }
 
         // private void GetCameraPosition(float dt, out Vector3 pos, out Quaternion rot)
@@ -330,26 +340,29 @@ namespace Loki.Mods
             if (___m_nview == null || ___m_nview.GetZDO() == null || !___m_nview.IsOwner() || Player.m_localPlayer != __instance)
                 return;
 
-            if (!__instance.InPlaceMode() && _allowScrollToChangeState.Value)
+            var scroll = Input.GetAxis("Mouse ScrollWheel");
+            if (scroll != 0)
             {
-                var scroll = Input.GetAxis("Mouse ScrollWheel");
-                if (scroll < 0)
+                if (CanScroll(__instance) && _allowScrollToChangeState.Value)
                 {
-                    // zoom out
-                    if (!IsThirdPerson(CurrentFPMode) && _statesAllowed.Contains(FirstPersonModes.ThirdPerson))
+                    if (scroll < 0)
                     {
-                        CurrentFPMode = FirstPersonModes.ThirdPerson;
-                    }
-                }
-                else if (scroll > 0)
-                {
-                    // zoom in
-                    if (IsThirdPerson(CurrentFPMode))
-                    {
-                        var gc = GameCamera.instance;
-                        if ((float)_currentZoomDistance.GetValue(gc) <= gc.m_minDistance)
+                        // zoom out
+                        if (!IsThirdPerson(CurrentFPMode) && _statesAllowed.Contains(FirstPersonModes.ThirdPerson))
                         {
-                            CycleMode();
+                            CurrentFPMode = FirstPersonModes.ThirdPerson;
+                        }
+                    }
+                    else if (scroll > 0)
+                    {
+                        // zoom in
+                        if (IsThirdPerson(CurrentFPMode))
+                        {
+                            var gc = GameCamera.instance;
+                            if ((float)_currentZoomDistance.GetValue(gc) <= gc.m_minDistance)
+                            {
+                                CycleMode();
+                            }
                         }
                     }
                 }
@@ -393,6 +406,47 @@ namespace Loki.Mods
 
                 _setVisible(visible);
             }
+        }
+
+        private static bool CanScroll(Player p)
+        {
+            if (p.InPlaceMode())
+                return false;
+            if (Minimap.IsOpen())
+                return false;
+            if (p.GetCurrentCraftingStation())
+                return false;
+            if (VPlusAxMIsActive())
+                return false;
+            if (InventoryGui.instance && ((Animator)_inventoryAnimator.GetValue(InventoryGui.instance)).GetBool("visible"))
+                return false;
+
+            return true;
+        }
+
+        private static bool VPlusAxMIsActive()
+        {
+            if (_VPlusCompatibility.Value)
+            {
+                if (_vplusTypeAem == null)
+                {
+                    _vplusTypeAbm = AccessTools.TypeByName("ABM");
+                    _vplusTypeAem = AccessTools.TypeByName("AEM");
+                }
+
+                try
+                {
+                    if (AccessTools.StaticFieldRefAccess<bool>(_vplusTypeAbm, "isActive"))
+                        return true;
+                    if (AccessTools.StaticFieldRefAccess<bool>(_vplusTypeAem, "isActive"))
+                        return true;
+                }
+                catch (Exception ex)
+                {
+                    Debug.Log("Error with VPlus compatibility: " + ex);
+                }
+            }
+            return false;
         }
 
         private static bool IsDodging(Player __instance)
@@ -465,7 +519,6 @@ namespace Loki.Mods
 
             foreach (var component in root.gameObject.GetComponents<T>())
             {
-                Debug.Log("yielding on: " + root.name);
                 yield return component;
             }
 

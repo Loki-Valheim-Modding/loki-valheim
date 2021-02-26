@@ -140,6 +140,8 @@ namespace Loki.Mods
             attackDir = originJoint.forward;
         }
 
+        private static int _animationHeadToShoulderBias = 50;
+
         public IEnumerator PlayerFixedUpdate()
         {
             while (true)
@@ -156,10 +158,38 @@ namespace Loki.Mods
                 {
                     var __instance = Player.m_localPlayer;
                     var cam = GameCamera.instance.transform;
-                    var camRot = new Vector3(cam.localEulerAngles.x, 0, 0);
                     var camDir = new Vector3(0, cam.eulerAngles.y, 0);
+
+                    // When idling, we want to rotate our head so our arms etc stay the same.
+                    // When attacking or doing other arm things, we want to rotate our spine so the arms are also affected by our cam direction
+                    // However, hard switching between the two is jarring, so here we attempt to smooth it out a little.
+                    if (IsLockedInAnimation(__instance))
+                    {
+                        _animationHeadToShoulderBias++;
+                    }
+                    else
+                    {
+                        _animationHeadToShoulderBias--;
+                    }
+
+                    if (_animationHeadToShoulderBias < 0)
+                        _animationHeadToShoulderBias = 0;
+                    if (_animationHeadToShoulderBias > 15)
+                        _animationHeadToShoulderBias = 15;
+
+                    var angle = cam.localEulerAngles.x;
+                    if (angle > 180)
+                        angle -= 360;
+
+                    var camRotHead = new Vector3(angle * (_animationHeadToShoulderBias / 15f), 0, 0);
+                    var camRotSpine = new Vector3(angle * (1 - (_animationHeadToShoulderBias / 15f)), 0, 0);
+
+                    _head.transform.Rotate(-camDir, Space.World);
+                    _head.transform.Rotate(camRotHead, Space.World);
+                    _head.transform.Rotate(camDir, Space.World);
+
                     _spine.transform.Rotate(-camDir, Space.World);
-                    _spine.transform.Rotate(camRot, Space.World);
+                    _spine.transform.Rotate(camRotSpine, Space.World);
                     _spine.transform.Rotate(camDir, Space.World);
                 }
                 catch
@@ -207,8 +237,6 @@ namespace Loki.Mods
             _setVisible = null;
             _animator = Player.m_localPlayer.GetComponentInChildren<Animator>();
             CurrentFPMode = _statesAllowed.First();
-
-
         }
 
         // private void GetCameraPosition(float dt, out Vector3 pos, out Quaternion rot)
@@ -376,7 +404,7 @@ namespace Loki.Mods
 
             if (!IsThirdPerson(CurrentFPMode))
             {
-                if (!IsDodging(__instance))
+                if (!IsLockedInAnimation(__instance))
                 {
                     __instance.FaceLookDirection();
                 }
@@ -449,9 +477,31 @@ namespace Loki.Mods
             return false;
         }
 
-        private static bool IsDodging(Player __instance)
+        private static bool IsLockedInAnimation(Player __instance)
         {
-            return __instance.IsDodgeInvincible() || _animator.GetCurrentAnimatorStateInfo(0).IsName("Dodge");
+            if (__instance.IsDodgeInvincible())
+                return true;
+
+            var currentAnim = _animator.GetCurrentAnimatorStateInfo(0);
+
+            if (currentAnim.IsName("Dodge"))
+                return true;
+
+            if (currentAnim.IsTag("freeze") || currentAnim.IsTag("sitting") || currentAnim.IsTag("knockeddown") || currentAnim.IsTag("cutscene"))
+                return true;
+
+            if (currentAnim.IsName("HoldMast") || currentAnim.IsName("HoldDragon") || currentAnim.IsName(""))
+                return true;
+
+            if (currentAnim.IsName("Movement"))
+            {
+                if (__instance.GetVelocity().magnitude < 0.01f)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static FirstPersonModes CurrentFPMode

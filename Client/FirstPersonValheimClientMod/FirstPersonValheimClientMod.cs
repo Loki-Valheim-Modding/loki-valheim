@@ -412,6 +412,19 @@ namespace Loki.Mods
                 child.gameObject.SetActive(IsThirdPerson(CurrentFPMode));
             }
 
+            var visEqu = Player.m_localPlayer.GetComponentInChildren<VisEquipment>();
+            var beardGO = (GameObject)AccessTools.Field(typeof(VisEquipment), "m_beardItemInstance").GetValue(visEqu);
+            var hairGO = (GameObject)AccessTools.Field(typeof(VisEquipment), "m_hairItemInstance").GetValue(visEqu);
+
+            foreach (var renderer in GetComponentsInGrandChildren<Renderer>(beardGO))
+            {
+                renderer.enabled = IsThirdPerson(CurrentFPMode);
+            }
+            foreach (var renderer in GetComponentsInGrandChildren<Renderer>(hairGO))
+            {
+                renderer.enabled = IsThirdPerson(CurrentFPMode);
+            }
+
             Player.m_localPlayer.GetVisual().transform.Find("body").GetComponent<SkinnedMeshRenderer>().enabled = CurrentFPMode != FirstPersonModes.FirstPersonOnlyWeapons;
 
             if (CurrentFPMode == FirstPersonModes.FirstPersonHelmet)

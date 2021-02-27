@@ -35,6 +35,8 @@ namespace Loki.Mods
         private static ConfigEntry<bool> _overrideFoV;
         private static ConfigEntry<int> _configFoVThirdPerson;
         private static ConfigEntry<int> _configFoVFirstPerson;
+        private static ConfigEntry<ForceBodyRotationMode> _configForceBodyRotationModeWhileStandingStill;
+        private static ConfigEntry<bool> _configLimitCameraRotationWhenInIdleAnimation;
         private static ConfigEntry<bool> _configShowMessageOnSwitching;
         private static ConfigEntry<bool> _VPlusCompatibility;
         private static Transform _helmetAttach;
@@ -66,6 +68,8 @@ namespace Loki.Mods
             _overrideFoV = Config.Bind("Camera", "OverrideFoV", false, "Override the game's default FoV of 65 with your own setting");
             _configFoVThirdPerson = Config.Bind("Camera", "FovThirdPerson", 90, "The FoV used when in third person");
             _configFoVFirstPerson = Config.Bind("Camera", "FovFirstPerson", 90, "The FoV used when in first person");
+            _configForceBodyRotationModeWhileStandingStill = Config.Bind("Body", "ForceBodyRotationModeWhileStandingStill", ForceBodyRotationMode.ForceRotateAtShoulders, "Choose how the body should act when the camera rotates left or right; AlwaysForward will force the body to rotate if possible. The shoulders modes will kick in once you rotate 90 degrees to the side, while rotate freely allows free 360 movement");
+            _configLimitCameraRotationWhenInIdleAnimation = Config.Bind("Body", "LimitCameraRotationWhenInIdleAnimation", true, "During certain non-action animation states (e.g. sitting down or holding the mast), limit the camera to only rotate 90 degrees left or right. During action animation states (e.g. combat, dodge rolls), free rotation is always available.");
 
             _setVisibleFieldInfo = typeof(Character).GetMethod("SetVisible", BindingFlags.NonPublic | BindingFlags.Instance);
             _characterFieldInfo = AccessTools.Field(typeof(Attack), "m_character");
@@ -163,7 +167,7 @@ namespace Loki.Mods
                     // When idling, we want to rotate our head so our arms etc stay the same.
                     // When attacking or doing other arm things, we want to rotate our spine so the arms are also affected by our cam direction
                     // However, hard switching between the two is jarring, so here we attempt to smooth it out a little.
-                    if (IsLockedInAnimation(__instance))
+                    if (CurrentAnimationState(__instance) != AnimationState.Action)
                     {
                         _animationHeadToShoulderBias++;
                     }
@@ -250,6 +254,19 @@ namespace Loki.Mods
                 CycleMode();
             }
 
+            //if (IsDown(new KeyboardShortcut(KeyCode.B)))
+            //{
+            //    CycleCamLockMode();
+            //}
+
+            //if (IsDown(new KeyboardShortcut(KeyCode.V)))
+            //{
+            //    _configLimitCameraRotationWhenInIdleAnimation.Value = !_configLimitCameraRotationWhenInIdleAnimation.Value;
+            //    Player.m_localPlayer.Message(MessageHud.MessageType.TopLeft, "Changing lock mode to " + _configLimitCameraRotationWhenInIdleAnimation.Value);
+
+            //}
+
+
             if (CurrentFPMode == FirstPersonModes.FirstPersonHelmet || CurrentFPMode == FirstPersonModes.FirstPersonNoBody || CurrentFPMode == FirstPersonModes.FirstPersonOnlyWeapons || CurrentFPMode == FirstPersonModes.FirstPersonNoHelmetAlt)
             {
                 pos = _helmetAttach.position;
@@ -260,6 +277,34 @@ namespace Loki.Mods
                 pos = _helmetAttach.position;
                 _head.localScale = new Vector3(0.0001f, 0.0001f, 0.0001f);
             }
+
+            UpdateRotation(Player.m_localPlayer, __instance, ref rot);
+        }
+
+        private static void CycleCamLockMode()
+        {
+            switch (_configForceBodyRotationModeWhileStandingStill.Value)
+            {
+                case ForceBodyRotationMode.AlwaysForward:
+                    _configForceBodyRotationModeWhileStandingStill.Value = ForceBodyRotationMode.LockNearShoulders;
+                    break;
+                case ForceBodyRotationMode.LockNearShoulders:
+                    _configForceBodyRotationModeWhileStandingStill.Value = ForceBodyRotationMode.ForceRotateAtShoulders;
+                    break;
+                case ForceBodyRotationMode.ForceRotateAtShoulders:
+                    _configForceBodyRotationModeWhileStandingStill.Value = ForceBodyRotationMode.SnapRotateAtShoulders;
+                    break;
+                case ForceBodyRotationMode.SnapRotateAtShoulders:
+                    _configForceBodyRotationModeWhileStandingStill.Value = ForceBodyRotationMode.RotateFreely;
+                    break;
+                case ForceBodyRotationMode.RotateFreely:
+                    _configForceBodyRotationModeWhileStandingStill.Value = ForceBodyRotationMode.AlwaysForward;
+                    break;
+                default:
+                    break;
+            }
+
+            Player.m_localPlayer.Message(MessageHud.MessageType.TopLeft, "Changing rotation mode to " + _configForceBodyRotationModeWhileStandingStill.Value);
         }
 
         private static void CycleMode()
@@ -392,7 +437,6 @@ namespace Loki.Mods
         [HarmonyPostfix]
         static void ForceCharacterModelVisible(Player __instance, ZNetView ___m_nview)
         {
-
             // See Player code aborting on desync issues
             if (___m_nview == null || ___m_nview.GetZDO() == null || !___m_nview.IsOwner() || Player.m_localPlayer != __instance)
                 return;
@@ -433,11 +477,6 @@ namespace Loki.Mods
 
             if (!IsThirdPerson(CurrentFPMode))
             {
-                if (!IsLockedInAnimation(__instance))
-                {
-                    __instance.FaceLookDirection();
-                }
-
                 bool visible = true;
 
                 if (_isAimingBow)
@@ -462,6 +501,125 @@ namespace Loki.Mods
                 }
 
                 _setVisible(visible);
+            }
+        }
+
+        private static void UpdateRotation(Player p, GameCamera c, ref Quaternion rot)
+        {
+            var state = CurrentAnimationState(p);
+
+            switch (state)
+            {
+                case AnimationState.FrozenAction: // Do nothing!
+                    break;
+                case AnimationState.FrozenIdle:
+                    UpdateFrozenAnimationState(p, c, ref rot);
+                    break;
+                case AnimationState.StandingStill:
+                    UpdateStandingStillAnimationState(p, c, ref rot);
+                    break;
+                case AnimationState.Action:
+                    p.FaceLookDirection();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private static void UpdateStandingStillAnimationState(Player p, GameCamera c, ref Quaternion rot)
+        {
+            switch (_configForceBodyRotationModeWhileStandingStill.Value)
+            {
+                case ForceBodyRotationMode.AlwaysForward:
+                    p.FaceLookDirection();
+                    break;
+                case ForceBodyRotationMode.LockNearShoulders:
+                    LockToShoulders(p, c, ref rot);
+                    break;
+                case ForceBodyRotationMode.ForceRotateAtShoulders:
+                    ForceRotateAtShoulders(p, c);
+                    break;
+                case ForceBodyRotationMode.SnapRotateAtShoulders:
+                    SnapRotateAtShoulders(p, c);
+                    break;
+                case ForceBodyRotationMode.RotateFreely: // do nothing!
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private static void LockToShoulders(Player p, GameCamera c, ref Quaternion rot)
+        {
+            CalcAngleAndCross(p, c, out var angle, out var cross);
+
+            if (angle > 90)
+            {
+                var diff = angle - 90;
+
+                if (cross < 0)
+                {
+                    angle = -angle;
+                    diff = angle + 90;
+                }
+
+                p.SetMouseLook(new Vector2(diff, 0));
+                rot = p.m_eye.transform.rotation;
+            }
+        }
+
+        private static void SnapRotateAtShoulders(Player p, GameCamera c)
+        {
+            CalcAngleAndCross(p, c, out var angle, out var cross);
+            if (angle > 90)
+            {
+                p.FaceLookDirection();
+            }
+        }
+
+        private static void ForceRotateAtShoulders(Player p, GameCamera c)
+        {
+            CalcAngleAndCross(p, c, out var angle, out var cross);
+            if (angle > 90)
+            {
+                var diff = angle - 90;
+
+                if (cross < 0)
+                {
+                    angle = -angle;
+                    diff = angle + 90;
+                }
+                p.transform.eulerAngles -= new Vector3(0, diff, 0);
+            }
+        }
+
+        private static void CalcAngleAndCross(Player p, GameCamera c, out float angle, out float cross)
+        {
+            var cam = c.transform;
+            var camEuler = cam.eulerAngles;
+            var camDir = new Vector3(0, camEuler.y, 0);
+            var pDir = new Vector3(0, p.transform.eulerAngles.y, 0);
+
+            var qcam = Quaternion.Euler(camDir);
+            var qp = Quaternion.Euler(pDir);
+
+            var fcam = qcam * Vector3.forward;
+            var fp = qp * Vector3.forward;
+
+            cross = Vector3.Cross(fcam, fp).y;
+            angle = Quaternion.Angle(qcam, qp);
+
+        }
+
+        private static void UpdateFrozenAnimationState(Player p, GameCamera c, ref Quaternion rot)
+        {
+            if (_configLimitCameraRotationWhenInIdleAnimation.Value)
+            {
+                LockToShoulders(p, c, ref rot);
+            }
+            else
+            {
+                // do nothing!
             }
         }
 
@@ -506,31 +664,28 @@ namespace Loki.Mods
             return false;
         }
 
-        private static bool IsLockedInAnimation(Player __instance)
+        private static AnimationState CurrentAnimationState(Player __instance)
         {
             if (__instance.IsDodgeInvincible())
-                return true;
+                return AnimationState.FrozenAction;
 
             var currentAnim = _animator.GetCurrentAnimatorStateInfo(0);
 
-            if (currentAnim.IsName("Dodge"))
-                return true;
+            if (currentAnim.IsName("Dodge") || currentAnim.IsTag("knockeddown") || currentAnim.IsName("HoldDragon"))
+                return AnimationState.FrozenAction;
 
-            if (currentAnim.IsTag("freeze") || currentAnim.IsTag("sitting") || currentAnim.IsTag("knockeddown") || currentAnim.IsTag("cutscene"))
-                return true;
+            if (currentAnim.IsTag("freeze") || currentAnim.IsTag("sitting") || currentAnim.IsTag("cutscene") || currentAnim.IsName("HoldMast"))
+                return AnimationState.FrozenIdle;
 
-            if (currentAnim.IsName("HoldMast") || currentAnim.IsName("HoldDragon") || currentAnim.IsName(""))
-                return true;
-
-            if (currentAnim.IsName("Movement"))
+            if (currentAnim.IsName("Movement") || currentAnim.IsName("Encumbered"))
             {
                 if (__instance.GetVelocity().magnitude < 0.01f)
                 {
-                    return true;
+                    return AnimationState.StandingStill;
                 }
             }
 
-            return false;
+            return AnimationState.Action;
         }
 
         private static FirstPersonModes CurrentFPMode
@@ -656,5 +811,22 @@ namespace Loki.Mods
         FirstPersonNoHelmetAlt,
         FirstPersonOnlyWeapons,
         FirstPersonNoBody,
+    }
+
+    public enum ForceBodyRotationMode
+    {
+        AlwaysForward,
+        LockNearShoulders,
+        ForceRotateAtShoulders,
+        SnapRotateAtShoulders,
+        RotateFreely,
+    }
+
+    public enum AnimationState
+    {
+        FrozenAction,
+        FrozenIdle,
+        StandingStill,
+        Action
     }
 }

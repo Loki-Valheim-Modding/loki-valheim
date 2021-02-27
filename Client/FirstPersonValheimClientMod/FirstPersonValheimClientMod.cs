@@ -278,7 +278,10 @@ namespace Loki.Mods
                 _head.localScale = new Vector3(0.0001f, 0.0001f, 0.0001f);
             }
 
-            UpdateRotation(Player.m_localPlayer, __instance, ref rot);
+            if (!IsThirdPerson(CurrentFPMode))
+            {
+                UpdateRotation(Player.m_localPlayer, __instance, ref rot);
+            }
         }
 
         private static void CycleCamLockMode()

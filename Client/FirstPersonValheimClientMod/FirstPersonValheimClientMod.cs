@@ -195,6 +195,11 @@ namespace Loki.Mods
                     _spine.transform.Rotate(-camDir, Space.World);
                     _spine.transform.Rotate(camRotSpine, Space.World);
                     _spine.transform.Rotate(camDir, Space.World);
+
+                    if (CurrentAnimationState(__instance) == AnimationState.Action)
+                    {
+                        __instance.FaceLookDirection();
+                    }
                 }
                 catch
                 {
@@ -269,6 +274,7 @@ namespace Loki.Mods
 
             if (CurrentFPMode == FirstPersonModes.FirstPersonHelmet || CurrentFPMode == FirstPersonModes.FirstPersonNoBody || CurrentFPMode == FirstPersonModes.FirstPersonOnlyWeapons || CurrentFPMode == FirstPersonModes.FirstPersonNoHelmetAlt)
             {
+                _head.localScale = _originalHeadScale;
                 pos = _helmetAttach.position;
             }
             else if (CurrentFPMode == FirstPersonModes.FirstPersonNoHelmet)

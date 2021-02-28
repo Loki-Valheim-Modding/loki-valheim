@@ -761,7 +761,7 @@ namespace Loki.Mods
 		[HarmonyPostfix]
 		private static void UpdateHud_fixshiphud(Hud __instance)
 		{
-			if (!ComboFPSmod.IsThirdPerson(CurrentFPMode))
+			if (!IsThirdPerson(CurrentFPMode))
 			{
 				Camera mainCamera = Utils.GetMainCamera();
 				__instance.m_shipControlsRoot.transform.position = new Vector3((float)mainCamera.pixelWidth * 0.5f, (float)mainCamera.pixelHeight * 0.2f, 0.1f);

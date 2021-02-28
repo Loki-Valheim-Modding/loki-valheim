@@ -246,6 +246,16 @@ namespace Loki.Mods
             _setVisible = null;
             _animator = Player.m_localPlayer.GetComponentInChildren<Animator>();
             CurrentFPMode = _statesAllowed.First();
+
+            var allMats = Resources.FindObjectsOfTypeAll<Material>();
+
+            foreach (var mat in allMats)
+            {
+                if (mat.HasProperty("_CamCull"))
+                {
+                    mat.SetFloat("_CamCull", 0);
+                }
+            }
         }
 
         // private void GetCameraPosition(float dt, out Vector3 pos, out Quaternion rot)
@@ -255,7 +265,7 @@ namespace Loki.Mods
         {
             // Toggle FPS on H
             if (IsDown(_hotkey.Value) && Player.m_localPlayer != null && !Console.IsVisible() && !TextInput.IsVisible() && !Minimap.InTextInput() && !Menu.IsVisible())
-            {
+            { 
                 CycleMode();
             }
 

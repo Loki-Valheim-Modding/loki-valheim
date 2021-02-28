@@ -17,7 +17,6 @@ foreach ($csharpFile in $csharpFiles) {
     $content = Get-Content $csharpFile | Out-String
 
     if ($content -match $regexString) {
-        Write-Host "NU"
         $m1 = $Matches[0]
         $m2 = $Matches[1]
 
@@ -26,6 +25,8 @@ foreach ($csharpFile in $csharpFiles) {
 
         Set-Content -Path $csharpFile -Value $newContent
 
+        Write-Host "Replacing content of file: $csharpFile"
         Write-Host $newContent
+        Write-Host ""
     }
 }

@@ -757,6 +757,17 @@ namespace Loki.Mods
             _isAimingBow = attackHold && __instance.GetCurrentWeapon().m_shared.m_itemType == ItemDrop.ItemData.ItemType.Bow;
         }
 
+		[HarmonyPatch(typeof(Hud), "UpdateShipHud")]
+		[HarmonyPostfix]
+		private static void UpdateHud_fixshiphud(Hud __instance)
+		{
+			if (!IsThirdPerson(CurrentFPMode))
+			{
+				Camera mainCamera = Utils.GetMainCamera();
+				__instance.m_shipControlsRoot.transform.position = new Vector3((float)mainCamera.pixelWidth * 0.5f, (float)mainCamera.pixelHeight * 0.2f, 0.1f);
+			}
+		}
+
         private static IEnumerable<T> GetComponentsInGrandChildren<T>(GameObject root)
         {
 

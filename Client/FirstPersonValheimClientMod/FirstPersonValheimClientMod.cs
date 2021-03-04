@@ -265,7 +265,7 @@ namespace Loki.Mods
         static void SetCameraPositionToEyeOnFPS(GameCamera __instance, float dt, ref Vector3 pos, ref Quaternion rot)
         {
             // Toggle FPS on H
-            if (IsDown(_hotkey.Value) && Player.m_localPlayer != null && !Console.IsVisible() && !TextInput.IsVisible() && !Minimap.InTextInput() && !Menu.IsVisible())
+            if (_hotkey.Value.IsDown() && Player.m_localPlayer != null && !Console.IsVisible() && !TextInput.IsVisible() && !Minimap.InTextInput() && !Menu.IsVisible())
             { 
                 CycleMode();
             }
@@ -283,16 +283,19 @@ namespace Loki.Mods
             //}
 
 
-            if (CurrentFPMode == FirstPersonModes.FirstPersonHelmet || CurrentFPMode == FirstPersonModes.FirstPersonNoBody || CurrentFPMode == FirstPersonModes.FirstPersonOnlyWeapons || CurrentFPMode == FirstPersonModes.FirstPersonNoHelmetAlt)
-            {
-                _head.localScale = _originalHeadScale;
-                pos = _helmetAttach.position;
-            }
-            else if (CurrentFPMode == FirstPersonModes.FirstPersonNoHelmet)
-            {
-                _head.localScale = _originalHeadScale;
-                pos = _helmetAttach.position;
-                _head.localScale = new Vector3(0.0001f, 0.0001f, 0.0001f);
+            switch (CurrentFPMode) {
+                case FirstPersonModes.FirstPersonHelmet:
+                case FirstPersonModes.FirstPersonNoBody:
+                case FirstPersonModes.FirstPersonOnlyWeapons:
+                case FirstPersonModes.FirstPersonNoHelmetAlt:
+                    _head.localScale = _originalHeadScale;
+                    pos = _helmetAttach.position;
+                    break;
+                case FirstPersonModes.FirstPersonNoHelmet:
+                    _head.localScale = _originalHeadScale;
+                    pos = _helmetAttach.position;
+                    _head.localScale = new Vector3(0.0001f, 0.0001f, 0.0001f);
+                    break;
             }
 
             if (!IsThirdPerson(CurrentFPMode))
@@ -342,25 +345,6 @@ namespace Loki.Mods
             }
         }
 
-        private static bool IsDown(KeyboardShortcut value)
-        {
-            if (Input.GetKeyDown(value.MainKey))
-            {
-                if (value.Modifiers != null)
-                {
-                    foreach (var mod in value.Modifiers)
-                    {
-                        if (!Input.GetKey(mod))
-                        {
-                            return false;
-                        }
-                    }
-                }
-                return true;
-            }
-            return false;
-        }
-
         private static void SetFirstPerson(GameCamera __instance, bool toFirstPerson)
         {
             if (toFirstPerson)
@@ -407,21 +391,18 @@ namespace Loki.Mods
         [HarmonyPostfix]
         static void FixHelmetScale(Transform joint, ref GameObject __result)
         {
-            if (__result == null)
+            if (__result == null || joint != _helmetAttach)
                 return;
 
-            if (joint == _helmetAttach)
-            {
-                _currentHelmet = __result.transform;
+            _currentHelmet = __result.transform;
 
-                if (CurrentFPMode == FirstPersonModes.FirstPersonNoHelmet)
-                {
+            switch (CurrentFPMode) {
+                case FirstPersonModes.FirstPersonNoHelmet:
                     __result.transform.localScale = Vector3.one;
-                }
-                else if (CurrentFPMode == FirstPersonModes.FirstPersonNoHelmetAlt)
-                {
+                    break;
+                case FirstPersonModes.FirstPersonNoHelmetAlt:
                     __result.SetActive(false);
-                }
+                    break;
             }
         }
 
@@ -674,25 +655,23 @@ namespace Loki.Mods
 
         private static bool VPlusAxMIsActive()
         {
-            if (_VPlusCompatibility.Value)
+            if (!_VPlusCompatibility.Value) return false;
+            if (_vplusTypeAem == null)
             {
-                if (_vplusTypeAem == null)
-                {
-                    _vplusTypeAbm = AccessTools.TypeByName("ABM");
-                    _vplusTypeAem = AccessTools.TypeByName("AEM");
-                }
+                _vplusTypeAbm = AccessTools.TypeByName("ABM");
+                _vplusTypeAem = AccessTools.TypeByName("AEM");
+            }
 
-                try
-                {
-                    if (AccessTools.StaticFieldRefAccess<bool>(_vplusTypeAbm, "isActive"))
-                        return true;
-                    if (AccessTools.StaticFieldRefAccess<bool>(_vplusTypeAem, "isActive"))
-                        return true;
-                }
-                catch (Exception ex)
-                {
-                    Debug.Log("Error with VPlus compatibility: " + ex);
-                }
+            try
+            {
+                if (AccessTools.StaticFieldRefAccess<bool>(_vplusTypeAbm, "isActive"))
+                    return true;
+                if (AccessTools.StaticFieldRefAccess<bool>(_vplusTypeAem, "isActive"))
+                    return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.Log("Error with VPlus compatibility: " + ex);
             }
             return false;
         }
@@ -723,10 +702,7 @@ namespace Loki.Mods
 
         private static FirstPersonModes CurrentFPMode
         {
-            get
-            {
-                return _currentFPMode;
-            }
+            get => _currentFPMode;
             set
             {
                 if (_currentFPMode == value)

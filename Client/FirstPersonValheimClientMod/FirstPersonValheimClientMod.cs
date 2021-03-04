@@ -6,6 +6,7 @@ using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
+using Loki.Mods.Utility;
 using UnityEngine;
 
 namespace Loki.Mods
@@ -371,10 +372,10 @@ namespace Loki.Mods
                 cam.nearClipPlane = _fspNearPlane.Value;
                 __instance.m_nearClipPlaneMin = _fspNearPlane.Value;
                 __instance.m_nearClipPlaneMax = _fspNearPlane.Value;
-                _head = FindTransform(Player.m_localPlayer.transform, "Visual", "Armature", "Hips", "Spine", "Spine1", "Spine2", "Neck", "Head");
-                _spine = FindTransform(Player.m_localPlayer.transform, "Visual", "Armature", "Hips", "Spine", "Spine1");
-                _helmetAttach = FindTransform(_head, "Helmet_attach");
-                _jaw = FindTransform(_head, "Jaw");
+                _head = Player.m_localPlayer.transform.FindTransform("Visual", "Armature", "Hips", "Spine", "Spine1", "Spine2", "Neck", "Head");
+                _spine = Player.m_localPlayer.transform.FindTransform("Visual", "Armature", "Hips", "Spine", "Spine1");
+                _helmetAttach = _head.FindTransform("Helmet_attach");
+                _jaw = _head.FindTransform("Jaw");
                 _originalHeadScale = _head.localScale;
                 _originalJawScale = _jaw.localScale;
 
@@ -805,43 +806,6 @@ namespace Loki.Mods
                 {
                     yield return componentsInGrandChild;
                 }
-            }
-        }
-
-        private static Transform FindTransform(Transform root, params string[] path)
-        {
-
-            Transform output = root;
-            for (int i = 0; i < path.Length; i++)
-            {
-                output = output.Find(path[i]);
-
-                if (output == null) break;
-            }
-
-            return output;
-        }
-
-        private static void DumpHierarchy(Transform t, int depth)
-        {
-            Debug.Log(depth + ": " + t.name);
-            foreach (Transform child in t)
-            {
-                DumpHierarchy(child, depth + 1);
-            }
-        }
-
-        private static void DumpComponents(Transform foundHead)
-        {
-            Debug.Log("Components on " + foundHead.name);
-            foreach (var component in foundHead.GetComponents<Component>())
-            {
-                Debug.Log("Found component " + component.GetType().Name);
-            }
-
-            foreach (Transform t in foundHead)
-            {
-                DumpComponents(t);
             }
         }
     }

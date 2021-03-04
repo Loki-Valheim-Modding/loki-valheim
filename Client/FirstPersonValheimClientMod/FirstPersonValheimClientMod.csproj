@@ -90,6 +90,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FirstPersonValheimClientMod.cs" />
+    <Compile Include="Fixes\FixRenderCullingAroundPlayer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utility\KeyboardShortcutExtensions.cs" />
     <Compile Include="Utility\TransformExtensions.cs" />

@@ -9,8 +9,8 @@ namespace Loki.Mods.Utility {
         /// Returns whether the given KeyboardShortcut is active (key = down this frame)
         /// </summary>
         public static bool IsDown(KeyboardShortcut value) {
-            if (!Input.GetKeyDown(value.MainKey)) return false;
-            return value.Modifiers == null || value.Modifiers.All(Input.GetKey);
+            return Input.GetKeyDown(value.MainKey) 
+                   && (value.Modifiers == null || value.Modifiers.All(Input.GetKey));
         }
         
     }

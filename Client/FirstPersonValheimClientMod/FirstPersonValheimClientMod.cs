@@ -6,6 +6,7 @@ using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
+using Loki.Mods.Fixes;
 using Loki.Mods.Utility;
 using UnityEngine;
 
@@ -16,9 +17,12 @@ namespace Loki.Mods
     [BepInPlugin("com.loki.clientmods.valheim.firstperson", "First Person Client Mod", "1.0.0.0")]
     public class FirstPersonValheimClientMod : BaseUnityPlugin
     {
+        
+        public static FirstPersonValheimClientMod INSTANCE { get; private set; }
+        
         // Statics done because injection requires static methods
-        private static Action<bool> _setVisible;
-        private static Animator _animator;
+        public static Action<bool> _setVisible;
+        public static Animator _animator;
         private static MethodInfo _setVisibleFieldInfo;
         private static FieldInfo _characterFieldInfo;
         private static FieldInfo _currentZoomDistance;
@@ -47,16 +51,19 @@ namespace Loki.Mods
         private static Transform _head;
         private static Transform _spine;
         private static bool _isAimingBow;
-        private static FirstPersonValheimClientMod _thisMod;
-        private static List<FirstPersonModes> _statesAllowed;
+        public static List<FirstPersonModes> _statesAllowed;
 
         private static Type _vplusTypeAem;
         private static Type _vplusTypeAbm;
         private static FieldInfo _inventoryAnimator;
 
+        private static Transform _currentHelmet;
+
+        private static int _animationHeadToShoulderBias = 50;
+
         void Awake()
         {
-            _thisMod = this;
+            INSTANCE = this;
             _fspNearPlane = Config.Bind("Camera", "FPSNearPlane", 0.05f, "The Near Plane of the camera during FP mode");
             _hotkey = Config.Bind("Controls", "Hotkey", new KeyboardShortcut(KeyCode.H), "Hotkey used to cycle between first person. You can also add a modifier, e.g. H + LeftControl");
             _showBodyWhenAiming = Config.Bind("Body", "ShowBodyWhenAiming", false, "Whether to show your body while aiming your bow. The bow obscures the center of your screen so you might want to disable it");
@@ -90,20 +97,11 @@ namespace Loki.Mods
             }
 
             Harmony.CreateAndPatchAll(typeof(FirstPersonValheimClientMod));
+            Harmony.CreateAndPatchAll(typeof(FixRenderCullingAroundPlayer));
 
             if (_meleeAimFix.Value)
             {
                 StartCoroutine(PlayerFixedUpdate());
-            }
-        }
-
-        [HarmonyPatch(typeof(Player), "OnSpawned")]
-        [HarmonyPostfix]
-        static void OnSpawnedPost(Player __instance)
-        {
-            if (__instance == Player.m_localPlayer)
-            {
-                _thisMod.StartCoroutine(SmallSpawndelay());
             }
         }
 
@@ -144,8 +142,6 @@ namespace Loki.Mods
             originJoint = GameCamera.instance.transform;
             attackDir = originJoint.forward;
         }
-
-        private static int _animationHeadToShoulderBias = 50;
 
         public IEnumerator PlayerFixedUpdate()
         {
@@ -211,51 +207,29 @@ namespace Loki.Mods
 
         [HarmonyPatch(typeof(CharacterAnimEvent), "UpdateLookat")]
         [HarmonyPrefix]
-        static bool PreUpdateLookat(CharacterAnimEvent __instance)
-        {
-            if (!IsThirdPerson(CurrentFPMode) && _meleeAimFix.Value && __instance.GetComponentInParent<Character>() == Player.m_localPlayer && CurrentFPMode != FirstPersonModes.FirstPersonHelmet)
-            {
-                return false;
-            }
-            return true;
+        static bool PreUpdateLookat(CharacterAnimEvent __instance) {
+            return RespondsToCharacterAnimation(__instance);
         }
 
         [HarmonyPatch(typeof(CharacterAnimEvent), "UpdateHeadRotation")]
         [HarmonyPrefix]
-        static bool PreUpdateHeadRotation(CharacterAnimEvent __instance)
-        {
-            if (!IsThirdPerson(CurrentFPMode) && _meleeAimFix.Value && __instance.GetComponentInParent<Character>() == Player.m_localPlayer && CurrentFPMode != FirstPersonModes.FirstPersonHelmet)
-            {
-                return false;
-            }
-            return true;
+        static bool PreUpdateHeadRotation(CharacterAnimEvent __instance) {
+            return RespondsToCharacterAnimation(__instance);
+        }
+
+        private static bool RespondsToCharacterAnimation(CharacterAnimEvent target) {
+            return IsThirdPerson(CurrentFPMode) 
+                   || !_meleeAimFix.Value 
+                   || CurrentFPMode == FirstPersonModes.FirstPersonHelmet
+                   || target.GetComponentInParent<Character>() != Player.m_localPlayer ;
         }
 
         [HarmonyPatch(typeof(Player), "OnDeath")]
         [HarmonyPostfix]
         static void OnDeathPost(Player __instance)
         {
-            if (__instance == Player.m_localPlayer)
-            {
+            if (__instance == Player.m_localPlayer) {
                 CurrentFPMode = FirstPersonModes.ThirdPerson;
-            }
-        }
-
-        public static IEnumerator SmallSpawndelay()
-        {
-            yield return new WaitForSeconds(0.1f);
-            _setVisible = null;
-            _animator = Player.m_localPlayer.GetComponentInChildren<Animator>();
-            CurrentFPMode = _statesAllowed.First();
-
-            var allMats = Resources.FindObjectsOfTypeAll<Material>();
-
-            foreach (var mat in allMats)
-            {
-                if (mat.HasProperty("_CamCull"))
-                {
-                    mat.SetFloat("_CamCull", 0);
-                }
             }
         }
 
@@ -302,32 +276,6 @@ namespace Loki.Mods
             {
                 UpdateRotation(Player.m_localPlayer, __instance, ref rot);
             }
-        }
-
-        private static void CycleCamLockMode()
-        {
-            switch (_configForceBodyRotationModeWhileStandingStill.Value)
-            {
-                case ForceBodyRotationMode.AlwaysForward:
-                    _configForceBodyRotationModeWhileStandingStill.Value = ForceBodyRotationMode.LockNearShoulders;
-                    break;
-                case ForceBodyRotationMode.LockNearShoulders:
-                    _configForceBodyRotationModeWhileStandingStill.Value = ForceBodyRotationMode.ForceRotateAtShoulders;
-                    break;
-                case ForceBodyRotationMode.ForceRotateAtShoulders:
-                    _configForceBodyRotationModeWhileStandingStill.Value = ForceBodyRotationMode.SnapRotateAtShoulders;
-                    break;
-                case ForceBodyRotationMode.SnapRotateAtShoulders:
-                    _configForceBodyRotationModeWhileStandingStill.Value = ForceBodyRotationMode.RotateFreely;
-                    break;
-                case ForceBodyRotationMode.RotateFreely:
-                    _configForceBodyRotationModeWhileStandingStill.Value = ForceBodyRotationMode.AlwaysForward;
-                    break;
-                default:
-                    break;
-            }
-
-            Player.m_localPlayer.Message(MessageHud.MessageType.TopLeft, "Changing rotation mode to " + _configForceBodyRotationModeWhileStandingStill.Value);
         }
 
         private static void CycleMode()
@@ -384,8 +332,6 @@ namespace Loki.Mods
                     __instance.m_fov = _configFoVThirdPerson.Value;
             }
         }
-
-        private static Transform _currentHelmet;
 
         [HarmonyPatch(typeof(VisEquipment), "AttachItem")]
         [HarmonyPostfix]
@@ -700,7 +646,7 @@ namespace Loki.Mods
             return AnimationState.Action;
         }
 
-        private static FirstPersonModes CurrentFPMode
+        public static FirstPersonModes CurrentFPMode
         {
             get => _currentFPMode;
             set

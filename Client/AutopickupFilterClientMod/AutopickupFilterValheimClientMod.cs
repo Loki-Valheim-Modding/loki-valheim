@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace AutopickupFilterValheimClientMod
 {
-    [BepInPlugin("com.loki.clientmods.valheim.autopickupfilter", "Autopickup Filter", "1.0.0.0")]
+    [BepInPlugin("com.loki.clientmods.valheim.autopickupfilter", "Autopickup Filter", "1.0.0.1")]
     public class AutopickupFilterValheimClientMod : BaseUnityPlugin
     {
         private static LootOption lootmode = LootOption.BlockTrash;
@@ -73,11 +73,6 @@ namespace AutopickupFilterValheimClientMod
             {
                 return;
             }
-            else if (lootmode == LootOption.BlockAll)
-            {
-                __instance.m_autoPickup = false;
-                return;
-            }
 
             if (isTrash(__instance.m_itemData.m_shared.m_name))
             {
@@ -106,9 +101,6 @@ namespace AutopickupFilterValheimClientMod
                         lootmode = LootOption.BlockTrash;
                         break;
                     case LootOption.BlockTrash:
-                        lootmode = LootOption.BlockAll;
-                        break;
-                    case LootOption.BlockAll:
                         lootmode = LootOption.BlockNone;
                         break;
                     default:
@@ -124,9 +116,6 @@ namespace AutopickupFilterValheimClientMod
                             break;
                         case LootOption.BlockTrash:
                             item.m_autoPickup = !isTrash(name);
-                            break;
-                        case LootOption.BlockAll:
-                            item.m_autoPickup = false;
                             break;
                         default:
                             break;
@@ -160,7 +149,6 @@ namespace AutopickupFilterValheimClientMod
     public enum LootOption
     {
         BlockNone,
-        BlockTrash,
-        BlockAll
+        BlockTrash
     }
 }

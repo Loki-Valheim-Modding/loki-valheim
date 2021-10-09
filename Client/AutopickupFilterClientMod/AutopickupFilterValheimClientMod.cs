@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace AutopickupFilterValheimClientMod
 {
-    [BepInPlugin("com.loki.clientmods.valheim.autopickupfilter", "Autopickup Filter", "1.0.0.0")]
+    [BepInPlugin("com.loki.clientmods.valheim.autopickupfilter", "Autopickup Filter", "1.0.0.1")]
     public class AutopickupFilterValheimClientMod : BaseUnityPlugin
     {
         private static LootOption lootmode = LootOption.BlockTrash;

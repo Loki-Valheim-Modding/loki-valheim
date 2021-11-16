@@ -61,6 +61,9 @@ jobs:
         with:
           name: ModsOutput
           path: Build/ModsOutput
+      - name: Deal the Multiline
+        id: multi-line
+        run: echo "::set-output name=RELEASE_NOTES::${{ github.event.inputs.releaseNotes }}".replace("\n", "%0A")
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -70,7 +73,7 @@ jobs:
           tag_name: ${{github.event.inputs.version}}
           release_name: ${{github.event.inputs.version}}
           body: |
-            ${{ github.event.inputs.releaseNotes }}
+            ${{ steps.multi-line.outputs.RELEASE_NOTES  }}
           draft: false
           prerelease: false
 

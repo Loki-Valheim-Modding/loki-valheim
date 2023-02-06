@@ -14,7 +14,7 @@ namespace Loki.Mods
 {
 
 
-    [BepInPlugin("com.loki.clientmods.valheim.firstperson", "First Person Client Mod", "1.0.0.0")]
+    [BepInPlugin("com.loki.clientmods.valheim.firstperson", "First Person Client Mod", "1.0.1.0")] //TM: advance revision for patch
     public class FirstPersonValheimClientMod : BaseUnityPlugin
     {
         
@@ -42,6 +42,7 @@ namespace Loki.Mods
         private static ConfigEntry<int> _configFoVFirstPerson;
         private static ConfigEntry<ForceBodyRotationMode> _configForceBodyRotationModeWhileStandingStill;
         private static ConfigEntry<bool> _configLimitCameraRotationWhenInIdleAnimation;
+        private static ConfigEntry<bool> _configLockDodgeRolls; //TM
         private static ConfigEntry<bool> _configShowMessageOnSwitching;
         private static ConfigEntry<bool> _VPlusCompatibility;
         private static Transform _helmetAttach;
@@ -78,6 +79,7 @@ namespace Loki.Mods
             _configFoVFirstPerson = Config.Bind("Camera", "FovFirstPerson", 90, "The FoV used when in first person");
             _configForceBodyRotationModeWhileStandingStill = Config.Bind("Body", "ForceBodyRotationModeWhileStandingStill", ForceBodyRotationMode.ForceRotateAtShoulders, "Choose how the body should act when the camera rotates left or right; AlwaysForward will force the body to rotate if possible. The shoulders modes will kick in once you rotate 90 degrees to the side, while rotate freely allows free 360 movement");
             _configLimitCameraRotationWhenInIdleAnimation = Config.Bind("Body", "LimitCameraRotationWhenInIdleAnimation", true, "During certain non-action animation states (e.g. sitting down or holding the mast), limit the camera to only rotate 90 degrees left or right. During action animation states (e.g. combat, dodge rolls), free rotation is always available.");
+            _configLockDodgeRolls = Config.Bind("Body", "LockDodgeRolls", false, "Lock the player rotation to camera during frozen-action states (e.g. dodge rolls)."); // TM new default
 
             _setVisibleFieldInfo = typeof(Character).GetMethod("SetVisible", BindingFlags.NonPublic | BindingFlags.Instance);
             _characterFieldInfo = AccessTools.Field(typeof(Attack), "m_character");
@@ -470,7 +472,11 @@ namespace Loki.Mods
 
             switch (state)
             {
-                case AnimationState.FrozenAction: // Do nothing!
+                case AnimationState.FrozenAction: // Do nothing! --- TM This is probably the spot to try first.
+                    if (_configLockDodgeRolls.Value)
+                    {
+                        p.FaceLookDirection();
+                    }
                     break;
                 case AnimationState.FrozenIdle:
                     UpdateFrozenAnimationState(p, c, ref rot);

@@ -472,7 +472,7 @@ namespace Loki.Mods
 
             switch (state)
             {
-                case AnimationState.FrozenAction: // Do nothing! --- TM This is probably the spot to try first.
+                case AnimationState.FrozenAction: // TM: Do nothing if unlocked, rotate body if LockDodgeRolls
                     if (_configLockDodgeRolls.Value)
                     {
                         p.FaceLookDirection();

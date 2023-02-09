@@ -14,7 +14,7 @@ namespace Loki.Mods
 {
 
 
-    [BepInPlugin("com.loki.clientmods.valheim.firstperson", "First Person Client Mod", "1.0.0.0")]
+    [BepInPlugin("com.loki.clientmods.valheim.firstperson", "First Person Client Mod", "1.1.1.0")] //TM: advance revision for patch
     public class FirstPersonValheimClientMod : BaseUnityPlugin
     {
         
@@ -36,12 +36,14 @@ namespace Loki.Mods
         private static ConfigEntry<bool> _showBodyWhenAiming;
         private static ConfigEntry<bool> _showBodyWhenBlocking;
         private static ConfigEntry<bool> _jawFix;
-        private static ConfigEntry<bool> _meleeAimFix;
         private static ConfigEntry<bool> _overrideFoV;
         private static ConfigEntry<int> _configFoVThirdPerson;
         private static ConfigEntry<int> _configFoVFirstPerson;
         private static ConfigEntry<ForceBodyRotationMode> _configForceBodyRotationModeWhileStandingStill;
         private static ConfigEntry<bool> _configLimitCameraRotationWhenInIdleAnimation;
+        private static ConfigEntry<bool> _configEnforceBodyRotation; //TM:
+        private static ConfigEntry<bool> _meleeAimFix;
+        private static ConfigEntry<float> _configRangedAimHeightOffset; //TM: used in AttackStartPre()
         private static ConfigEntry<bool> _configShowMessageOnSwitching;
         private static ConfigEntry<bool> _VPlusCompatibility;
         private static Transform _helmetAttach;
@@ -69,7 +71,6 @@ namespace Loki.Mods
             _showBodyWhenAiming = Config.Bind("Body", "ShowBodyWhenAiming", false, "Whether to show your body while aiming your bow. The bow obscures the center of your screen so you might want to disable it");
             _showBodyWhenBlocking = Config.Bind("Body", "ShowBodyWhenBlocking", false, "Whether to show your body while blocking. Some shields might obscure your vision, but that's what shields are for!");
             _jawFix = Config.Bind("Body", "JawFix", false, "[Experimental] Tries to fix the visible jaw when helmet is set to be shown (even when not wearing a helmet). Might cause other artifacts for certain helmets.");
-            _meleeAimFix = Config.Bind("Body", "MeleeAimFix", true, "[Experimental] Changes the default melee attack direction (which is always straight forward from your body) into a direction based on your head camera.");
             _configStatesAllowed = Config.Bind("Body", "Modes", String.Join(",", (new FirstPersonModes[] { FirstPersonModes.FirstPersonNoHelmet, FirstPersonModes.ThirdPerson }).Select(x => x.ToString())), "The list of modes that you want to be able to cycle through when the hotkey is pressed. The first entry is the mode used when the game starts. Currently functional options: ThirdPerson, FirstPersonHelmet, FirstPersonNoHelmet, FirstPersonNoBody, FirstPersonNoHelmetAlt");
             _allowScrollToChangeState = Config.Bind("Controls", "AllowScrolling", true, "When using the scroll zoom option, scroll into and out of first person. When going from third person into first person, it takes the option that comes after ThirdPerson. When going from first person into third person, if there is no ThirdPerson in the list, it will stay in first person when zooming in.");
             _configShowMessageOnSwitching = Config.Bind("Controls", "ShowMessageWhenSwitching", true, "Show a notification message in the topleft when switching camera mode");
@@ -78,6 +79,10 @@ namespace Loki.Mods
             _configFoVFirstPerson = Config.Bind("Camera", "FovFirstPerson", 90, "The FoV used when in first person");
             _configForceBodyRotationModeWhileStandingStill = Config.Bind("Body", "ForceBodyRotationModeWhileStandingStill", ForceBodyRotationMode.ForceRotateAtShoulders, "Choose how the body should act when the camera rotates left or right; AlwaysForward will force the body to rotate if possible. The shoulders modes will kick in once you rotate 90 degrees to the side, while rotate freely allows free 360 movement");
             _configLimitCameraRotationWhenInIdleAnimation = Config.Bind("Body", "LimitCameraRotationWhenInIdleAnimation", true, "During certain non-action animation states (e.g. sitting down or holding the mast), limit the camera to only rotate 90 degrees left or right. During action animation states (e.g. combat, dodge rolls), free rotation is always available.");
+            _configEnforceBodyRotation = Config.Bind("Combat", "EnforceBodyRotation", false, "Locks the player body to camera rotation during even locked animation states such as dodge-roll and auto-run. Useful for PvP."); // TM: Added new config category and reorganized for clarity.
+            _meleeAimFix = Config.Bind("Combat", "MeleeAimFix", true, "[Experimental] Changes the default melee attack direction (which is always straight forward from your body) into a direction based on your head camera.");
+            _configRangedAimHeightOffset = Config.Bind("Combat", "RangedAimHeightOffset", 1.2f, "[Experimental] Adjusts the height where ranged projectiles are fired from your character when in first-person. Use to fix bows that shoot from your knees (or somewhere else)."); //TM: this should be exposed
+
 
             _setVisibleFieldInfo = typeof(Character).GetMethod("SetVisible", BindingFlags.NonPublic | BindingFlags.Instance);
             _characterFieldInfo = AccessTools.Field(typeof(Attack), "m_character");
@@ -109,17 +114,14 @@ namespace Loki.Mods
         [HarmonyPrefix]
         static void AttackStartPre(Attack __instance, Humanoid character)
         {
-            if (IsThirdPerson(CurrentFPMode) || !_meleeAimFix.Value)
-                return;
-
-            if (Player.m_localPlayer != character)
+            if (IsThirdPerson(CurrentFPMode) || Player.m_localPlayer != character) // TM: We are always going to do this in first-person regardless of _meleeAimFix.
                 return;
 
             if (__instance.m_attackType == Attack.AttackType.Projectile)
             {
                 // Compensate ranged attacks with extra height since they originate from the feet.
                 // Would be better to just fire the arrow directly from the camera forward
-                __instance.m_attackHeight = 1.2f;
+                __instance.m_attackHeight = _configRangedAimHeightOffset; //TM: Updated to expose in config.
             }
             else
             {
@@ -229,7 +231,7 @@ namespace Loki.Mods
         static void OnDeathPost(Player __instance)
         {
             if (__instance == Player.m_localPlayer) {
-                CurrentFPMode = FirstPersonModes.ThirdPerson;
+                CurrentFPMode = FirstPersonModes.ThirdPerson; // Does this change back when you respawn?
             }
         }
 
@@ -470,7 +472,8 @@ namespace Loki.Mods
 
             switch (state)
             {
-                case AnimationState.FrozenAction: // Do nothing!
+                case AnimationState.FrozenAction: // TM: Do nothing if unlocked, rotate body if EnforceBodyRotation
+                    if (_configEnforceBodyRotation.Value) p.FaceLookDirection();
                     break;
                 case AnimationState.FrozenIdle:
                     UpdateFrozenAnimationState(p, c, ref rot);

@@ -32,14 +32,5 @@ namespace ImmersionModValheimClientMod
             __result = false;
             return false;
         }
-
-        [HarmonyPatch(typeof(EnemyHud), "Awake")]
-        [HarmonyPrefix]
-        public static void PreAwake(EnemyHud __instance)
-        {
-            __instance.m_baseHud = new GameObject();
-            __instance.m_baseHudBoss = new GameObject();
-            __instance.m_baseHudPlayer = new GameObject();
-        }
     }
 }
